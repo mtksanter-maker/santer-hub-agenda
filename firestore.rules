@@ -1,0 +1,74 @@
+rules_version = '2';
+
+/**
+ * ============================================================================
+ * SANTER HUB — Security Rules do Cloud Firestore
+ * ============================================================================
+ *
+ * Esta é a camada real de segurança. O front-end apenas esconde a interface;
+ * quem autoriza de fato é este arquivo.
+ *
+ * COMO PUBLICAR
+ * -------------
+ * Console do Firebase → Firestore Database → aba "Regras" → cole este conteúdo
+ * → Publicar. (Ou `firebase deploy --only firestore:rules`, se usar a CLI.)
+ *
+ * COMO CRIAR O ADMINISTRADOR
+ * --------------------------
+ * Console do Firebase → Authentication → Sign-in method → ative "E-mail/senha"
+ * → aba Users → "Adicionar usuário" com e-mail e senha.
+ *
+ * Não existe autocadastro: o site nunca chama createUserWithEmailAndPassword.
+ * Só entra quem você criar ali.
+ * ============================================================================
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * Um evento tem exatamente seis campos, e nenhum a mais.
+     * Impede que uma escrita autenticada grave lixo ou dado de participante.
+     */
+    function eventoValido(dados) {
+      return dados.keys().hasOnly(['nome', 'descricao', 'data', 'hora', 'linkGoogleForms', 'ativo'])
+        && dados.keys().hasAll(['nome', 'data', 'hora', 'linkGoogleForms', 'ativo'])
+        && dados.nome is string && dados.nome.size() > 0 && dados.nome.size() <= 200
+        && dados.data is string && dados.data.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && dados.hora is string && dados.hora.matches('^[0-9]{2}:[0-9]{2}$')
+        && dados.linkGoogleForms is string && dados.linkGoogleForms.matches('^https://.*')
+        && dados.ativo is bool;
+    }
+
+    match /eventos/{eventoId} {
+
+      /**
+       * Leitura pública apenas de eventos ativos.
+       *
+       * Em consultas de lista, o Firestore compara esta condição com o FILTRO
+       * da consulta, não com cada documento: uma busca sem `where ativo == true`
+       * é recusada para quem não está autenticado. É por isso que a página
+       * pública sempre consulta com esse filtro.
+       *
+       * Quem está autenticado lê tudo, inclusive os rascunhos inativos.
+       */
+      allow read: if resource.data.ativo == true || request.auth != null;
+
+      /**
+       * Só usuário autenticado escreve.
+       *
+       * Para restringir a UIDs específicos, troque `request.auth != null` por:
+       *   request.auth != null && request.auth.uid in ['UID_1', 'UID_2']
+       * (o UID aparece em Authentication → Users, no console.)
+       */
+      allow create: if request.auth != null && eventoValido(request.resource.data);
+      allow update: if request.auth != null && eventoValido(request.resource.data);
+      allow delete: if request.auth != null;
+    }
+
+    // Nada além da coleção de eventos existe neste banco.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

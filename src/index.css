@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Identidade visual do Santer Hub — tokens de cor (tema claro e escuro)
+   ========================================================================= */
+
+:root {
+  --surface: #f8fafc;
+  --primary: #0f2d59; /* Navy Blue */
+  --on-primary: #ffffff;
+  --on-surface: #0f172a;
+  --on-surface-variant: #475569;
+  --surface-container: #ffffff;
+  --surface-container-low: #f1f5f9;
+  --surface-container-lowest: #e2e8f0;
+  --surface-container-high: #fafbfd;
+  --surface-container-highest: #cbd5e1;
+  --outline: #94a3b8;
+  --outline-variant: #e2e8f0;
+  --error: #ba1a1a;
+
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(241, 245, 249, 0.95) 100%);
+  --glass-border: rgba(15, 45, 89, 0.12);
+  --glass-hover-shadow: 0 10px 30px rgba(15, 45, 89, 0.08);
+  --gradient-mesh-bg: radial-gradient(circle at 50% 50%, #e2e8f0 0%, #f8fafc 70%);
+  --hub-logo-shadow: 0 0 10px rgba(15, 45, 89, 0.2);
+}
+
+.dark {
+  --surface: #0a141d;
+  --primary: #95e1ff; /* Original Cyan */
+  --on-primary: #003544;
+  --on-surface: #dae3f0;
+  --on-surface-variant: #bdc8ce;
+  --surface-container: #172129;
+  --surface-container-low: #131d25;
+  --surface-container-lowest: #060f17;
+  --surface-container-high: #212b34;
+  --surface-container-highest: #2c363f;
+  --outline: #879298;
+  --outline-variant: #3d484d;
+  --error: #ffb4ab;
+
+  --glass-bg: linear-gradient(135deg, rgba(13, 30, 70, 0.4) 0%, rgba(10, 20, 29, 0.8) 100%);
+  --glass-border: rgba(0, 50, 100, 0.4);
+  --glass-hover-shadow: 0 0 20px rgba(149, 225, 255, 0.15);
+  --gradient-mesh-bg: radial-gradient(circle at 50% 50%, #001e46 0%, #0a141d 70%);
+  --hub-logo-shadow: 0 0 10px #95e1ff;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", "Inter", sans-serif;
+
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-error: var(--error);
+}
+
+/* ============================================================================
+   Base
+   ========================================================================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Estado de foco visível e consistente para navegação por teclado. */
+:focus-visible,
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   Componentes visuais da marca
+   ========================================================================= */
+
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--glass-hover-shadow);
+  transform: translateY(-4px);
+}
+
+/* Eventos encerrados não recebem o destaque de hover. */
+.card-encerrado:hover {
+  border-color: var(--glass-border);
+  box-shadow: none;
+  transform: none;
+}
+
+.gradient-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: -20;
+  background: var(--gradient-mesh-bg);
+  transition: background 0.3s ease;
+}
+
+/*
+ * O logotipo oficial é branco (PNG com transparência), pensado para fundos
+ * escuros. No tema claro ele é recolorido para o azul institucional
+ * (resultado medido: #132b56, praticamente o --primary #0f2d59), mantendo a
+ * identidade e garantindo contraste.
+ */
+html:not(.dark) .logo-marca {
+  filter: brightness(0) saturate(100%) invert(13%) sepia(53%) saturate(1652%)
+    hue-rotate(196deg) brightness(97%) contrast(96%);
+}
+
+.hub-logo-line {
+  position: relative;
+  display: inline-block;
+}
+
+.hub-logo-line::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-primary);
+  box-shadow: var(--hub-logo-shadow);
+}
+
+/* ============================================================================
+   Animações (discretas)
+   ========================================================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-fade-in {
+    animation: none;
+  }
+
+  .glass-card,
+  .glass-card:hover {
+    transition: none;
+    transform: none;
+  }
+}
