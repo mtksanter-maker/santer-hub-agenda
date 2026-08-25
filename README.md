@@ -178,5 +178,9 @@ src/
     auth.ts            entrar, sair e useAutenticacao
     eventos.ts         ordenação, formatação de data e o hook useEventos
     router.ts          rota por hash (#/admin)
-  context/             tema claro/escuro
+    movimento.ts       rolagem do Hero, seção atual e brilho do ponteiro
+    useRevelar.ts      revelação por rolagem e atraso em cascata
 ```
+
+O site tem um tema só, o escuro, definido inteiramente em `src/index.css`. Não
+há alternância nem provider de tema.

@@ -1,59 +1,130 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Identidade visual do Santer Hub — tokens de cor (tema claro e escuro)
+   SANTER HUB — SISTEMA DE DESIGN
+   ----------------------------------------------------------------------------
+   Organizado em camadas, na ordem em que são lidas:
+
+     1. Cor e materiais    — tokens do tema (escuro, único)
+     2. Movimento          — curvas de mola e durações
+     3. Tipografia         — escala com tracking e leading por tamanho
+     4. Base
+     5. Materiais          — vidro, cromo, bordas de rolagem
+     6. Interação          — resposta no toque, revelação por rolagem
+     7. Hero
+     8. Preferências       — movimento, transparência e contraste reduzidos
+
+   O princípio que guia o conjunto: nada aqui é aleatório. Cada valor de
+   espaçamento, tempo e curva é uma escolha deliberada.
    ========================================================================= */
 
+/* ============================================================================
+   1. COR E MATERIAIS
+   ========================================================================= */
+
+/*
+ * O Santer Hub tem um único tema, o escuro. Não existe modo claro: o gradiente
+ * da marca, a logo branca e o ciano de destaque foram desenhados para fundo
+ * escuro, e é assim que o Hub se apresenta.
+ */
 :root {
-  --surface: #f8fafc;
-  --primary: #0f2d59; /* Navy Blue */
-  --on-primary: #ffffff;
-  --on-surface: #0f172a;
-  --on-surface-variant: #475569;
-  --surface-container: #ffffff;
-  --surface-container-low: #f1f5f9;
-  --surface-container-lowest: #e2e8f0;
-  --surface-container-high: #fafbfd;
-  --surface-container-highest: #cbd5e1;
-  --outline: #94a3b8;
-  --outline-variant: #e2e8f0;
-  --error: #ba1a1a;
+  color-scheme: dark;
 
-  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(241, 245, 249, 0.95) 100%);
-  --glass-border: rgba(15, 45, 89, 0.12);
-  --glass-hover-shadow: 0 10px 30px rgba(15, 45, 89, 0.08);
-  --gradient-mesh-bg: radial-gradient(circle at 50% 50%, #e2e8f0 0%, #f8fafc 70%);
-  --hub-logo-shadow: 0 0 10px rgba(15, 45, 89, 0.2);
-}
-
-.dark {
   --surface: #0a141d;
   --primary: #95e1ff; /* Original Cyan */
+  --primary-forte: #b6ecff;
   --on-primary: #003544;
-  --on-surface: #dae3f0;
-  --on-surface-variant: #bdc8ce;
+  --on-surface: #e2eaf5;
+  --on-surface-variant: #a9b8c4;
   --surface-container: #172129;
   --surface-container-low: #131d25;
   --surface-container-lowest: #060f17;
   --surface-container-high: #212b34;
   --surface-container-highest: #2c363f;
   --outline: #879298;
-  --outline-variant: #3d484d;
+  --outline-variant: #2a353d;
   --error: #ffb4ab;
 
-  --glass-bg: linear-gradient(135deg, rgba(13, 30, 70, 0.4) 0%, rgba(10, 20, 29, 0.8) 100%);
-  --glass-border: rgba(0, 50, 100, 0.4);
-  --glass-hover-shadow: 0 0 20px rgba(149, 225, 255, 0.15);
+  /*
+   * Materiais translúcidos. O peso comunica hierarquia: o cromo (cabeçalho,
+   * menu) é mais denso e separa regiões estruturais; o vidro dos cards é mais
+   * leve e chama atenção para o que é interativo. Vidro leve nunca é empilhado
+   * sobre vidro leve — a legibilidade cairia.
+   */
+  --material-cromo: rgba(10, 20, 29, 0.68);
+  --material-cromo-blur: 24px;
+  --material-vidro: rgba(23, 33, 41, 0.6);
+  --material-vidro-blur: 20px;
+  --material-saturacao: 160%;
+
+  /* Fio de luz no topo da superfície: a luz batendo na borda do material. */
+  --luz-borda: rgba(149, 225, 255, 0.16);
+  --vidro-borda: rgba(149, 225, 255, 0.1);
+  --vidro-borda-ativa: rgba(149, 225, 255, 0.4);
+
+  /*
+   * Sombras cientes do contexto: superfícies maiores leem como mais espessas,
+   * com desfoque maior e sombra mais profunda que chips pequenos.
+   */
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.7);
+  --sombra-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 24px 48px -18px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(149, 225, 255, 0.12);
+  --sombra-cromo: 0 1px 0 rgba(149, 225, 255, 0.06), 0 16px 36px -24px rgba(0, 0, 0, 0.9);
+
+  --primary-tenue: rgba(149, 225, 255, 0.1);
+  --primary-tenue-forte: rgba(149, 225, 255, 0.2);
+
   --gradient-mesh-bg: radial-gradient(circle at 50% 50%, #001e46 0%, #0a141d 70%);
   --hub-logo-shadow: 0 0 10px #95e1ff;
+
+  /* Fundo do Hero: o degradê abre do preto para o azul da marca. */
+  --hero-fundo: radial-gradient(125% 125% at 50% 8%, #000000 38%, #0b3a5c 78%, #95e1ff 100%);
 }
+
+/* ============================================================================
+   2. MOVIMENTO — molas, não durações fixas
+   ----------------------------------------------------------------------------
+   Curvas que aproximam o comportamento de uma mola. O padrão da casa é a mola
+   criticamente amortecida (--mola): chega firme e não passa do alvo. O leve
+   overshoot de --mola-viva só é usado quando o gesto que veio antes carregava
+   impulso — um card que foi "jogado", um painel que salta do botão. Overshoot
+   em algo que apenas apareceu na tela parece errado.
+   ========================================================================= */
+
+:root {
+  /* Amortecimento 1.0 — sem overshoot. O padrão para quase tudo. */
+  --mola: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Amortecimento ~0.8 — passa levemente do alvo e volta. */
+  --mola-viva: cubic-bezier(0.34, 1.32, 0.64, 1);
+  /* Saída rápida para o retorno de um estado pressionado. */
+  --saida-rapida: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Resposta (não "duração": a mola não tem fim marcado, ela assenta). */
+  --resposta-toque: 110ms;
+  --resposta-curta: 240ms;
+  --resposta-media: 400ms;
+  --resposta-revelacao: 620ms;
+}
+
+/* ============================================================================
+   3. TIPOGRAFIA
+   ----------------------------------------------------------------------------
+   Tracking é específico do tamanho — nunca um valor só para tudo. Texto grande
+   pede tracking negativo (as letras se afastam demais conforme crescem); texto
+   pequeno pede um respiro positivo. Leading anda no sentido inverso do tamanho:
+   apertado nos títulos, folgado no corpo.
+
+   Todos os tamanhos usam rem e clamp: o layout acompanha o ajuste de tamanho de
+   fonte do navegador em vez de quebrar.
+   ========================================================================= */
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Manrope", "Inter", sans-serif;
+  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --color-surface: var(--surface);
   --color-primary: var(--primary);
+  --color-primary-forte: var(--primary-forte);
   --color-on-primary: var(--on-primary);
   --color-on-surface: var(--on-surface);
   --color-on-surface-variant: var(--on-surface-variant);
@@ -67,52 +138,244 @@
   --color-error: var(--error);
 }
 
+/* Marca do Hero — o maior tipo da página, o tracking mais fechado. */
+.tipo-display {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 7vw, 4.25rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+/* Chamada de abertura. */
+.tipo-chamada {
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 3.4vw, 2.125rem);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.024em;
+}
+
+/* Título de seção. */
+.tipo-titulo {
+  font-family: var(--font-display);
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.028em;
+}
+
+/* Título de card. */
+.tipo-subtitulo {
+  font-family: var(--font-display);
+  font-size: clamp(1.1875rem, 1.6vw, 1.4375rem);
+  font-weight: 700;
+  line-height: 1.24;
+  letter-spacing: -0.016em;
+}
+
+.tipo-subtitulo-menor {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+/* Corpo: tracking neutro, leading folgado. */
+.tipo-corpo {
+  font-size: clamp(1rem, 1.1vw, 1.0625rem);
+  line-height: 1.65;
+  letter-spacing: 0;
+}
+
+.tipo-corpo-menor {
+  font-size: 0.9375rem;
+  line-height: 1.62;
+  letter-spacing: 0.003em;
+}
+
+/*
+ * Rótulo em caixa alta. Texto pequeno e espaçado precisa de tracking positivo
+ * generoso — sem ele as maiúsculas se colam e a leitura trava.
+ */
+.tipo-rotulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.tipo-rotulo-botao {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/*
+ * Vibrância: sobre material translúcido, cinza chapado some. Texto secundário
+ * sobre vidro ganha peso e um respiro de tracking para se sustentar contra o
+ * fundo que muda por baixo.
+ */
+.vibrante {
+  color: var(--on-surface-variant);
+  font-weight: 500;
+  letter-spacing: 0.006em;
+}
+
 /* ============================================================================
-   Base
+   4. BASE
    ========================================================================= */
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background-color: var(--color-surface);
-  color: var(--color-on-surface);
+  background-color: var(--surface);
+  color: var(--on-surface);
   font-family: var(--font-sans);
+  font-optical-sizing: auto;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Estado de foco visível e consistente para navegação por teclado. */
+/*
+ * Estado de foco visível e consistente para navegação por teclado.
+ *
+ * Sem mexer no border-radius: o contorno já acompanha o formato do elemento, e
+ * forçar um raio aqui achataria os botões redondos no momento em que recebem
+ * foco — justamente quando a forma precisa ficar estável.
+ */
 :focus-visible,
 .focus-ring:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--primary-tenue-forte);
+  color: var(--on-surface);
 }
 
 /* ============================================================================
-   Componentes visuais da marca
+   5. MATERIAIS
    ========================================================================= */
 
+/*
+ * Cromo: a barra flutuante por onde o conteúdo passa por baixo. Material denso,
+ * porque separa uma região estrutural da página.
+ */
+.material-cromo {
+  background: var(--material-cromo);
+  backdrop-filter: blur(var(--material-cromo-blur)) saturate(var(--material-saturacao));
+  -webkit-backdrop-filter: blur(var(--material-cromo-blur)) saturate(var(--material-saturacao));
+  box-shadow: var(--sombra-cromo);
+  /*
+   * Sem transição aqui de propósito: quem anima a entrada e a saída do material
+   * é o próprio cabeçalho, que mantém a transição mesmo sem esta classe. Se ela
+   * morasse aqui, o material entraria animado e sairia de uma vez.
+   */
+}
+
+/*
+ * Borda de rolagem, no lugar de um filete de 1px. Onde o conteúdo encontra o
+ * cromo flutuante, um desfoque curto em degradê faz a emenda — e só existe
+ * enquanto a barra de fato sobrepõe o conteúdo.
+ */
+.borda-rolagem {
+  position: absolute;
+  inset: 100% 0 auto 0;
+  height: 2.25rem;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
+  opacity: 0;
+  transition: opacity var(--resposta-curta) var(--mola);
+}
+
+.borda-rolagem[data-visivel="true"] {
+  opacity: 1;
+}
+
+/*
+ * Vidro dos cards: material leve, para o que é interativo. Repousa direto sobre
+ * a superfície da página — nunca sobre outro vidro.
+ */
 .glass-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(12px);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  background: var(--material-vidro);
+  border: 1px solid var(--vidro-borda);
+  backdrop-filter: blur(var(--material-vidro-blur)) saturate(var(--material-saturacao));
+  -webkit-backdrop-filter: blur(var(--material-vidro-blur)) saturate(var(--material-saturacao));
+  box-shadow: var(--sombra-1);
+  transition: transform var(--resposta-media) var(--mola),
+    border-color var(--resposta-curta) var(--mola),
+    box-shadow var(--resposta-media) var(--mola);
+}
+
+/*
+ * Fio de luz no topo — a luz batendo na quina do material.
+ *
+ * Recuado nas laterais para não vazar pelo canto arredondado. Vive no ::after
+ * (pintado acima do conteúdo), o que é seguro: ele ocupa 1px na faixa do
+ * padding, onde não há texto.
+ */
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 1.25rem auto 1.25rem;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--luz-borda), transparent);
+  pointer-events: none;
 }
 
 .glass-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--glass-hover-shadow);
-  transform: translateY(-4px);
+  border-color: var(--vidro-borda-ativa);
+  box-shadow: var(--sombra-2);
+  transform: translateY(-3px);
+}
+
+/*
+ * Brilho que acompanha o ponteiro: a luz se move com a mão, 1:1, o tempo todo.
+ * Só em ponteiro fino — no toque não há hover que justifique.
+ *
+ * Fica no ::before de propósito: pseudo-elemento anterior ao conteúdo é
+ * pintado acima do fundo do card e abaixo do texto, então o brilho ilumina a
+ * superfície sem tingir a leitura.
+ */
+@media (hover: hover) and (pointer: fine) {
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--resposta-curta) var(--mola);
+    background: radial-gradient(
+      22rem circle at var(--ponteiro-x, 50%) var(--ponteiro-y, 0%),
+      var(--primary-tenue),
+      transparent 62%
+    );
+  }
+
+  .glass-card:hover::before {
+    opacity: 1;
+  }
 }
 
 /* Eventos encerrados não recebem o destaque de hover. */
 .card-encerrado:hover {
-  border-color: var(--glass-border);
-  box-shadow: none;
+  border-color: var(--vidro-borda);
+  box-shadow: var(--sombra-1);
   transform: none;
 }
 
@@ -121,19 +384,13 @@ body {
   inset: 0;
   z-index: -20;
   background: var(--gradient-mesh-bg);
-  transition: background 0.3s ease;
 }
 
 /*
- * O logotipo oficial é branco (PNG com transparência), pensado para fundos
- * escuros. No tema claro ele é recolorido para o azul institucional
- * (resultado medido: #132b56, praticamente o --primary #0f2d59), mantendo a
- * identidade e garantindo contraste.
+ * O logotipo oficial é branco (PNG com transparência), pensado exatamente para
+ * fundos escuros — que é o único fundo que o site tem. Ele entra como veio, sem
+ * recoloração.
  */
-html:not(.dark) .logo-marca {
-  filter: brightness(0) saturate(100%) invert(13%) sepia(53%) saturate(1652%)
-    hue-rotate(196deg) brightness(97%) contrast(96%);
-}
 
 .hub-logo-line {
   position: relative;
@@ -141,47 +398,360 @@ html:not(.dark) .logo-marca {
 }
 
 .hub-logo-line::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -4px;
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--color-primary);
+  background: var(--primary);
   box-shadow: var(--hub-logo-shadow);
 }
 
+/* Divisor macio entre seções — um degradê que some nas pontas, não um filete. */
+.divisor-secao {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--outline-variant) 18%, var(--outline-variant) 82%, transparent);
+}
+
 /* ============================================================================
-   Animações (discretas)
+   6. INTERAÇÃO
+   ----------------------------------------------------------------------------
+   Resposta é a base de tudo: o realce nasce no apertar, não no soltar. Esperar
+   o clique para dar sinal deixa a interface morta.
    ========================================================================= */
+
+.pressionavel {
+  transition: transform var(--resposta-curta) var(--mola),
+    background-color var(--resposta-curta) var(--mola),
+    border-color var(--resposta-curta) var(--mola),
+    color var(--resposta-curta) var(--mola),
+    box-shadow var(--resposta-curta) var(--mola);
+  touch-action: manipulation;
+}
+
+.pressionavel:active {
+  transform: scale(0.97);
+  transition-duration: var(--resposta-toque);
+  transition-timing-function: var(--saida-rapida);
+}
+
+/* Alvos grandes comprimem menos: a mesma escala neles pareceria exagerada. */
+.pressionavel-suave:active {
+  transform: scale(0.99);
+}
+
+/* Botão principal da marca. */
+.botao-primario {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: var(--sombra-1);
+}
+
+.botao-primario:hover {
+  background: var(--primary-forte);
+  box-shadow: var(--sombra-2);
+}
+
+/* Botão secundário: contorno tênue sobre a superfície. */
+.botao-secundario {
+  border: 1px solid var(--vidro-borda-ativa);
+  background: var(--primary-tenue);
+  color: var(--primary);
+}
+
+.botao-secundario:hover {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: transparent;
+}
+
+/*
+ * Painel do menu no mobile. Ele se materializa a partir do próprio botão que o
+ * abriu — desfoque, escala e opacidade juntos, para ler como material chegando
+ * e não como um fade. E some pelo mesmo caminho por onde entrou.
+ *
+ * Fica sempre montado: transições em CSS partem sempre do valor que está na
+ * tela, então abrir e fechar podem se cruzar no meio sem salto.
+ */
+.folha-menu {
+  transform-origin: top right;
+  opacity: 0;
+  transform: scale(0.94) translateY(-0.5rem);
+  filter: blur(10px);
+  visibility: hidden;
+  transition: opacity var(--resposta-curta) var(--mola),
+    transform var(--resposta-curta) var(--mola),
+    filter var(--resposta-curta) var(--mola),
+    visibility 0s linear var(--resposta-curta);
+}
+
+.folha-menu[data-aberto="true"] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  visibility: visible;
+  transition: opacity var(--resposta-media) var(--mola),
+    transform var(--resposta-media) var(--mola-viva),
+    filter var(--resposta-media) var(--mola),
+    visibility 0s;
+}
+
+/*
+ * Indicador da seção atual na navegação. Responde à pergunta "onde estou?" e
+ * desliza entre os itens em vez de piscar de um para o outro.
+ */
+.link-nav {
+  position: relative;
+}
+
+.link-nav::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.4rem;
+  height: 2px;
+  width: 1.25rem;
+  border-radius: 2px;
+  background: var(--primary);
+  transform: translateX(-50%) scaleX(0);
+  opacity: 0;
+  transition: transform var(--resposta-media) var(--mola), opacity var(--resposta-curta) var(--mola);
+}
+
+.link-nav[data-atual="true"]::after {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------------------------
+   Revelação por rolagem
+   ----------------------------------------------------------------------------
+   O conteúdo entra apontando para onde vai: sobe um pouco, cresce um fio e
+   perde o desfoque. O atraso em cascata (--atraso) faz a lista entrar em
+   sequência, não em bloco.
+   ------------------------------------------------------------------------- */
+
+.revelar,
+.revelar-item {
+  opacity: 0;
+  transform: translate3d(0, 1.75rem, 0) scale(0.985);
+  filter: blur(6px);
+  transition: opacity var(--resposta-revelacao) var(--mola) var(--atraso, 0ms),
+    transform var(--resposta-revelacao) var(--mola) var(--atraso, 0ms),
+    filter var(--resposta-revelacao) var(--mola) var(--atraso, 0ms);
+  will-change: transform, opacity;
+}
+
+.revelar-visivel,
+.revelar-grupo[data-visivel="true"] .revelar-item {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  will-change: auto;
+}
+
+
+/* ============================================================================
+   7. HERO
+   ========================================================================= */
+
+/*
+ * O gradiente radial da marca cobre o miolo em preto e abre para o azul do Hub
+ * nas bordas.
+ */
+.hero-bg {
+  background: var(--hero-fundo);
+}
+
+/* Emenda suave entre o gradiente do Hero e o fundo do restante da página. */
+.hero-fade {
+  background: linear-gradient(to bottom, transparent 0%, var(--surface) 92%);
+}
+
+/*
+ * A marca acompanha a rolagem 1:1 — recua, encolhe e se dissolve conforme a
+ * página desce, em vez de esperar um gatilho. --rolagem-hero vai de 0 a 1 e é
+ * escrito a cada quadro por useProgressoHero.
+ */
+.hero-logo {
+  transform: translate3d(0, calc(var(--rolagem-hero, 0) * 3.5rem), 0)
+    scale(calc(1 - var(--rolagem-hero, 0) * 0.1));
+  opacity: calc(1 - var(--rolagem-hero, 0) * 0.9);
+  filter: drop-shadow(0 0 36px rgba(149, 225, 255, 0.45));
+  will-change: transform, opacity;
+}
+
+/* A dica de rolagem some assim que a pessoa começa a rolar — já cumpriu o papel. */
+.hero-dica {
+  opacity: calc(1 - var(--rolagem-hero, 0) * 3);
+  transition: color var(--resposta-curta) var(--mola);
+}
+
+.hero-dica-seta {
+  animation: flutuar 2.4s var(--mola) infinite;
+}
+
+@keyframes flutuar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(0.3rem);
+  }
+}
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(0.75rem);
+    filter: blur(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
+    filter: blur(0);
   }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: fadeIn var(--resposta-revelacao) var(--mola) forwards;
 }
+
+/* Pulso do estado de carregamento — sinal de status, não decoração. */
+@keyframes respirar {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.respirando {
+  animation: respirar 1.8s ease-in-out infinite;
+}
+
+/* ============================================================================
+   8. PREFERÊNCIAS DO SISTEMA
+   ----------------------------------------------------------------------------
+   Movimento reduzido não quer dizer nenhum retorno: quer dizer um retorno mais
+   gentil. O que some é o deslocamento; o que fica é a mudança de opacidade que
+   ajuda a entender o que aconteceu.
+   ========================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
+  /*
+   * Nada de zerar tudo com um seletor universal e !important: isso atropelaria
+   * as regras específicas logo abaixo, inclusive os tempos de visibilidade do
+   * menu, e deixaria o painel invisível mas ainda clicável. Cada peça que se
+   * move tem aqui o seu equivalente parado.
+   */
+
+  /* Laços contínuos saem de cena: são eles que incomodam de verdade. */
+  .hero-dica-seta,
+  .respirando {
+    animation: none;
+  }
+
+  .respirando {
+    opacity: 0.6;
+  }
+
   .animate-fade-in {
     animation: none;
   }
 
-  .glass-card,
-  .glass-card:hover {
-    transition: none;
+  .revelar,
+  .revelar-item {
     transform: none;
+    filter: none;
+    transition: opacity 240ms ease var(--atraso, 0ms);
+  }
+
+  .revelar-visivel,
+  .revelar-grupo[data-visivel="true"] .revelar-item {
+    transform: none;
+  }
+
+  .glass-card:hover,
+  .pressionavel:active,
+  .pressionavel-suave:active {
+    transform: none;
+  }
+
+  .hero-logo {
+    transform: none;
+    opacity: 1;
+  }
+
+  .hero-dica {
+    opacity: 1;
+  }
+
+  .folha-menu {
+    transform: none;
+    filter: none;
+    transition: opacity 200ms ease, visibility 0s linear 200ms;
+  }
+
+  .folha-menu[data-aberto="true"] {
+    transform: none;
+    transition: opacity 200ms ease, visibility 0s;
+  }
+
+  .link-nav::after {
+    transition: opacity 160ms ease;
+  }
+}
+
+/* Transparência reduzida: os materiais ficam foscos, quase sólidos. */
+@media (prefers-reduced-transparency: reduce) {
+  .material-cromo,
+  .glass-card,
+  .folha-menu-material {
+    background: var(--surface-container);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Sem o brilho que segue o ponteiro; o fio de luz da borda pode ficar. */
+  .glass-card::before {
+    display: none;
+  }
+
+  .borda-rolagem {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(to bottom, var(--surface), transparent);
+  }
+}
+
+/* Contraste alto: fundo sólido e contorno definido. */
+@media (prefers-contrast: more) {
+  .material-cromo,
+  .glass-card,
+  .folha-menu-material {
+    background: var(--surface-container);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: var(--on-surface-variant);
+  }
+
+  .glass-card::after,
+  .glass-card::before {
+    display: none;
+  }
+
+  .botao-secundario {
+    border-color: var(--primary);
+    background: transparent;
   }
 }

@@ -1,11 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { ThemeProvider } from './context/ThemeContext';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import About from './components/About';
 import Agenda from './components/Agenda';
 import Spaces from './components/Spaces';
 import Footer from './components/Footer';
+import Revelar from './components/Revelar';
 import { useRota } from './lib/router';
 
 /**
@@ -22,42 +22,49 @@ const AdminApp = lazy(() => import('./admin/AdminApp'));
  *
  * Há uma única rota interna, `#/admin`, que abre o painel administrativo.
  * Âncoras comuns (`#agenda`, `#espacos`) continuam funcionando como rolagem.
+ *
+ * O site tem um tema só, o escuro — definido inteiro em `index.css`. Não há
+ * provider de tema nem alternância: nada aqui muda de cor em tempo de execução.
  */
 export default function App() {
   const rota = useRota();
 
   if (rota.startsWith('/admin')) {
     return (
-      <ThemeProvider>
-        <Suspense fallback={<CarregandoPainel />}>
-          <AdminApp />
-        </Suspense>
-      </ThemeProvider>
+      <Suspense fallback={<CarregandoPainel />}>
+        <AdminApp />
+      </Suspense>
     );
   }
 
   return (
-    <ThemeProvider>
-      <div className="flex min-h-screen flex-col bg-surface text-on-surface">
-        <a
-          href="#agenda"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-primary focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-on-primary"
-        >
-          Ir para a agenda
-        </a>
+    <div className="flex min-h-screen flex-col bg-surface text-on-surface">
+      <a
+        href="#agenda"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-60 focus:rounded-full focus:bg-primary focus:px-5 focus:py-3 focus:text-sm focus:font-bold focus:text-on-primary focus:shadow-[var(--sombra-2)]"
+      >
+        Ir para a agenda
+      </a>
 
-        <Header />
+      <Header />
 
-        <main className="flex-1">
-          <Hero />
+      <main className="flex-1">
+        <Hero />
+
+        {/* Abaixo do Hero cada seção entra conforme a pessoa rola a página. */}
+        <Revelar>
           <About />
+        </Revelar>
+        <Revelar>
           <Agenda />
+        </Revelar>
+        <Revelar>
           <Spaces />
-        </main>
+        </Revelar>
+      </main>
 
-        <Footer />
-      </div>
-    </ThemeProvider>
+      <Footer />
+    </div>
   );
 }
 
@@ -65,7 +72,7 @@ export default function App() {
 function CarregandoPainel() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface">
-      <p className="text-sm text-on-surface-variant">Carregando painel...</p>
+      <p className="respirando text-sm text-on-surface-variant">Carregando painel...</p>
     </div>
   );
 }

@@ -25,7 +25,14 @@ export const site = {
   // ---------------------------------------------------------------------------
   // Assets da marca
   // ---------------------------------------------------------------------------
+  /** Logo do Santer Hub — usado no Hero e no rodapé. */
   logoUrl: 'https://i.imgur.com/FyEzFUM.png',
+
+  /**
+   * Logo institucional da Santer — usado no menu (no lugar do logo do Hub) e
+   * no rodapé, ao lado dele.
+   */
+  logoSanterUrl: 'https://i.imgur.com/jCjAJUF.png',
 
   /**
    * Vídeo institucional usado como fundo do Hero (somente em telas grandes).

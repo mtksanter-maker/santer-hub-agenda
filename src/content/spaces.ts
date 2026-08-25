@@ -1,10 +1,14 @@
 /**
  * Espaços do Santer Hub disponíveis para reserva.
  *
- * O agendamento é feito por uma ferramenta externa. Enquanto `linkAgendamento`
- * não for uma URL válida, o card exibe "Agendamento sob consulta" no lugar do
- * botão — nunca um link quebrado.
+ * Cada sala tem o seu canal de reserva: a Master é agendada pelo eAgenda, a
+ * Podcast pelo WhatsApp do Hub. Enquanto `linkAgendamento` não for uma URL
+ * válida, o card exibe "Agendamento sob consulta" no lugar do botão — nunca um
+ * link quebrado.
  */
+
+import salaMaster from '../assets/espacos/sala-master.jpg';
+import salaPodcast from '../assets/espacos/sala-podcast.jpg';
 
 export interface Espaco {
   id: string;
@@ -12,12 +16,27 @@ export interface Espaco {
   capacidade: string;
   descricao: string;
   imagem: string;
-  /** URL do sistema externo de agendamento, ou o placeholder abaixo. */
+  /** URL de reserva, ou o placeholder abaixo. */
   linkAgendamento: string;
+  /** Por onde a reserva é feita — define o texto e o ícone do botão. */
+  canal: 'eagenda' | 'whatsapp';
 }
 
 /** Placeholder usado enquanto o link de agendamento não existe. */
 export const AGENDAMENTO_PENDENTE = 'INSERIR_LINK_AGENDAMENTO';
+
+/** WhatsApp oficial para reserva dos espaços. */
+export const WHATSAPP_RESERVA = 'https://wa.me/554797880359';
+
+/** Agendamento da Sala Master — sistema eAgenda da Santer. */
+export const EAGENDA_SALA_MASTER =
+  'https://santerempreendimentos.eagenda.com.br/agendamentos/incluir/santerempreendimentos/horarios?cl=salamaster';
+
+/** Texto do botão de reserva conforme o canal. */
+export const RESERVA = {
+  eagenda: 'Reservar no eAgenda',
+  whatsapp: 'Reservar pelo WhatsApp',
+} as const;
 
 export const ESPACOS: Espaco[] = [
   {
@@ -26,9 +45,9 @@ export const ESPACOS: Espaco[] = [
     capacidade: 'Até 12 pessoas',
     descricao:
       'Sala executiva para reuniões e fechamentos estratégicos, com ambiente privativo e display interativo.',
-    imagem:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuD8hrhar4sNdTgHZE3jq9Kxtkp60pb1HQV5xT4MocdLBivtuIGzgupyDFhI1HDu5yS4BAuhQezsR_Dac0TzRkY7cQASNYnua-ADsjMUw13k0_gJHcV6eXkmG6xsGbdQnupJZEE67yVv-sEDAWdHDeFsET2qkc_sUE6RDj8RKwO5t20iJ216oE6up6vZIVvRW84WTWKY_0ltPHxL3JKA_TMyWF9QiZDKzfIHD0ZR2qxLgwg7Y-6bHkML',
-    linkAgendamento: AGENDAMENTO_PENDENTE,
+    imagem: salaMaster,
+    linkAgendamento: EAGENDA_SALA_MASTER,
+    canal: 'eagenda',
   },
   {
     id: 'sala-podcast',
@@ -36,8 +55,8 @@ export const ESPACOS: Espaco[] = [
     capacidade: 'Até 4 pessoas',
     descricao:
       'Estúdio para gravação de conteúdo profissional, com isolamento acústico e equipamentos de áudio e vídeo.',
-    imagem:
-      'https://lh3.googleusercontent.com/aida-public/AB6AXuC73zbvUZ7MU290n1G5uo8JdO9RZof32gfVefdgfuPRnUF90D07Qm1FwwZ7lbTyxJDbZgiltH8c90_JBqDWZOiIp5i_eAtArwOy7Gj3nxJDuYtONt_RG6fmP7LgqdmEFRxTXqrCPo6XbHp7wmk88D85ybrmjqUiF4GKDmR99ckNzhKn1d2gJ83shM4Kcq6_TOUfX2W4yCZLb7NuGRTtEEOIlBXzS75x__xZFSVehVxy66Z_y2HpH-Xm',
-    linkAgendamento: AGENDAMENTO_PENDENTE,
+    imagem: salaPodcast,
+    linkAgendamento: WHATSAPP_RESERVA,
+    canal: 'whatsapp',
   },
 ];

@@ -47,6 +47,71 @@ export function formatarData(data: string): string {
   return `${dia}/${mes}/${ano}`;
 }
 
+const MESES_CURTOS = [
+  'jan',
+  'fev',
+  'mar',
+  'abr',
+  'mai',
+  'jun',
+  'jul',
+  'ago',
+  'set',
+  'out',
+  'nov',
+  'dez',
+];
+
+/**
+ * '2026-09-15' → { dia: '15', mes: 'set', ano: '2026' }.
+ *
+ * Serve ao bloco de data do card, onde o dia é o número grande e o mês é o
+ * rótulo abaixo. Devolve `null` se a data não estiver no formato esperado —
+ * nesse caso o card cai para a data por extenso, sem inventar nada.
+ */
+export function partesData(data: string) {
+  const partes = data.split('-');
+  if (partes.length !== 3) return null;
+
+  const [ano, mes, dia] = partes;
+  const nomeMes = MESES_CURTOS[Number(mes) - 1];
+  if (!nomeMes) return null;
+
+  return { dia, mes: nomeMes, ano };
+}
+
+const DIAS_DA_SEMANA = [
+  'Domingo',
+  'Segunda-feira',
+  'Terça-feira',
+  'Quarta-feira',
+  'Quinta-feira',
+  'Sexta-feira',
+  'Sábado',
+];
+
+/**
+ * '2026-09-15' → 'Terça-feira'. String vazia se a data não for válida.
+ *
+ * Saber o dia da semana muda o planejamento de quem vai ao evento, e é a única
+ * informação da data que não dá para deduzir olhando o card.
+ *
+ * O `Date` é montado com o construtor de partes, não com a string: passar
+ * '2026-09-15' direto seria lido como UTC e, no nosso fuso, voltaria um dia.
+ */
+export function diaDaSemana(data: string): string {
+  const partes = partesData(data);
+  if (!partes) return '';
+
+  const referencia = new Date(
+    Number(partes.ano),
+    MESES_CURTOS.indexOf(partes.mes),
+    Number(partes.dia),
+  );
+
+  return Number.isNaN(referencia.getTime()) ? '' : DIAS_DA_SEMANA[referencia.getDay()];
+}
+
 /** Eventos com data mais próxima primeiro; sem data, por último. */
 export function ordenarEventos(eventos: Evento[]): Evento[] {
   return [...eventos].sort((a, b) => {

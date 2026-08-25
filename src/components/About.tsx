@@ -1,5 +1,7 @@
 import { GraduationCap, TrendingUp, Users } from 'lucide-react';
 import { site } from '../content/site';
+import { aoMoverPonteiro } from '../lib/movimento';
+import { atrasoEmCascata } from '../lib/useRevelar';
 
 const PILARES = [
   {
@@ -24,30 +26,34 @@ export default function About() {
     <section
       id="sobre"
       aria-labelledby="sobre-titulo"
-      className="scroll-mt-24 border-t border-outline-variant/30 px-5 sm:px-8 py-20 sm:py-24"
+      className="scroll-mt-24 px-5 pb-20 sm:px-8 sm:pb-28"
     >
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-2xl">
-          <p className="text-xs font-bold uppercase tracking-widest text-primary">O Hub</p>
-          <h2
-            id="sobre-titulo"
-            className="mt-3 font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-on-surface"
-          >
+        <hr className="divisor-secao mb-20 sm:mb-24" />
+
+        <div className="revelar-item max-w-2xl">
+          <p className="tipo-rotulo text-primary">O Hub</p>
+          <h2 id="sobre-titulo" className="tipo-titulo mt-4 text-balance text-on-surface">
             {site.tagline}
           </h2>
-          <p className="mt-4 text-base sm:text-lg leading-relaxed text-on-surface-variant">
+          <p className="tipo-corpo mt-5 text-pretty text-on-surface-variant">
             {site.textoInstitucional}
           </p>
         </div>
 
-        <ul className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {PILARES.map(({ icone: Icone, titulo, texto }) => (
-            <li key={titulo} className="glass-card rounded-2xl p-7">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
+        <ul className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
+          {PILARES.map(({ icone: Icone, titulo, texto }, indice) => (
+            <li
+              key={titulo}
+              onPointerMove={aoMoverPonteiro}
+              style={atrasoEmCascata(indice + 1)}
+              className="glass-card revelar-item rounded-3xl p-7"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10">
                 <Icone className="h-5 w-5 text-primary" aria-hidden="true" />
               </span>
-              <h3 className="mt-5 font-display text-lg font-bold text-on-surface">{titulo}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{texto}</p>
+              <h3 className="tipo-subtitulo-menor mt-6 text-on-surface">{titulo}</h3>
+              <p className="tipo-corpo-menor vibrante mt-2.5">{texto}</p>
             </li>
           ))}
         </ul>

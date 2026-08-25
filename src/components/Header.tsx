@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Menu, Moon, Sun, X } from 'lucide-react';
+import { Calendar, Menu, X } from 'lucide-react';
 import { site } from '../content/site';
-import { useTheme } from '../context/ThemeContext';
+import { useSecaoAtual } from '../lib/movimento';
 
+/**
+ * Nomes diretos, com o conteúdo de cada seção — não guarda-chuvas vagos.
+ * Especificidade é o que torna a navegação previsível.
+ */
 const LINKS = [
-  { href: '#sobre', label: 'O Hub' },
-  { href: '#espacos', label: 'Espaços' },
-];
+  { href: '#sobre', id: 'sobre', label: 'O Hub' },
+  { href: '#agenda', id: 'agenda', label: 'Agenda' },
+  { href: '#espacos', id: 'espacos', label: 'Espaços' },
+] as const;
+
+const IDS_SECOES = LINKS.map((link) => link.id);
 
 export default function Header() {
-  const { theme, toggleTheme } = useTheme();
   const [menuAberto, setMenuAberto] = useState(false);
   const [comScroll, setComScroll] = useState(false);
+  const secaoAtual = useSecaoAtual(IDS_SECOES);
 
   useEffect(() => {
     const onScroll = () => setComScroll(window.scrollY > 24);
@@ -28,37 +35,66 @@ export default function Header() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
+  // Esc fecha o menu: nunca deixar a pessoa presa em um estado.
+  useEffect(() => {
+    if (!menuAberto) return;
+    const aoTeclar = (evento: KeyboardEvent) => {
+      if (evento.key === 'Escape') setMenuAberto(false);
+    };
+    window.addEventListener('keydown', aoTeclar);
+    return () => window.removeEventListener('keydown', aoTeclar);
+  }, [menuAberto]);
+
+  const comMaterial = comScroll || menuAberto;
+
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-md transition-shadow duration-300 ${
-        comScroll ? 'border-b border-outline-variant/40 shadow-sm' : 'border-b border-transparent'
+      // Sobre a primeira dobra do Hero o cabeçalho é invisível, para que a logo
+      // apareça sozinha. O material aparece assim que a página rola — e o
+      // conteúdo passa por baixo dele, sem uma faixa opaca comendo a tela.
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow] duration-300 ${
+        comMaterial ? 'material-cromo' : 'bg-transparent'
       }`}
+      style={{ transitionTimingFunction: 'var(--mola)' }}
     >
+      {/*
+       * Onde o cromo encontra o conteúdo, um degradê curto de desfoque faz a
+       * emenda — no lugar de um filete de 1px cortando a página.
+       */}
+      <div className="borda-rolagem" data-visivel={comMaterial} aria-hidden="true" />
+
       <nav
         aria-label="Navegação principal"
-        className="max-w-6xl mx-auto px-5 sm:px-8 h-16 md:h-18 flex items-center justify-between gap-4"
+        className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8 md:h-18"
       >
         <a
           href="#topo"
-          className="shrink-0 rounded-lg focus-ring"
+          className="pressionavel shrink-0 rounded-lg focus-ring"
           aria-label={`${site.nome} — ir para o início`}
         >
+          {/* No menu quem assina é a Santer; o logo do Hub já domina o topo. */}
           <img
-            src={site.logoUrl}
-            alt={site.nome}
+            src={site.logoSanterUrl}
+            alt="Santer"
             width={140}
             height={36}
-            className="logo-marca h-7 sm:h-8 w-auto object-contain"
+            className="logo-marca h-7 w-auto object-contain sm:h-8"
             referrerPolicy="no-referrer"
           />
         </a>
 
-        <div className="hidden md:flex items-center gap-7">
+        <div className="hidden items-center gap-7 md:flex">
           {LINKS.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors rounded-md focus-ring"
+              data-atual={secaoAtual === link.id}
+              aria-current={secaoAtual === link.id ? 'true' : undefined}
+              className={`link-nav pressionavel rounded-md text-sm font-semibold focus-ring ${
+                secaoAtual === link.id
+                  ? 'text-on-surface'
+                  : 'text-on-surface-variant hover:text-primary'
+              }`}
             >
               {link.label}
             </a>
@@ -69,88 +105,89 @@ export default function Header() {
               href={site.siteInstitucional}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors rounded-md focus-ring"
+              className="pressionavel rounded-md text-sm font-semibold text-on-surface-variant hover:text-primary focus-ring"
             >
               Santer
             </a>
           )}
 
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
-            className="p-2 rounded-full border border-outline-variant/50 text-on-surface-variant hover:text-primary hover:border-primary/50 transition-colors cursor-pointer focus-ring"
-          >
-            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
-
           <a
             href="#agenda"
-            className="inline-flex items-center gap-2 bg-primary text-on-primary text-sm font-bold px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity focus-ring"
+            className="botao-primario pressionavel tipo-rotulo-botao inline-flex items-center gap-2 rounded-full px-5 py-3 focus-ring"
           >
-            <Calendar className="w-4 h-4" aria-hidden="true" />
-            Agenda
+            <Calendar className="h-4 w-4" aria-hidden="true" />
+            Inscrições
           </a>
         </div>
 
-        <div className="flex md:hidden items-center gap-1">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
-            className="p-3 rounded-full text-on-surface-variant hover:text-primary transition-colors cursor-pointer focus-ring"
-          >
-            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-          </button>
+        <div className="flex items-center md:hidden">
           <button
             type="button"
             onClick={() => setMenuAberto((aberto) => !aberto)}
             aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
             aria-expanded={menuAberto}
             aria-controls="menu-mobile"
-            className="p-3 rounded-full text-on-surface-variant hover:text-primary transition-colors cursor-pointer focus-ring"
+            className="pressionavel cursor-pointer rounded-full p-3 text-on-surface-variant hover:text-primary focus-ring"
           >
-            {menuAberto ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {menuAberto ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </nav>
 
-      {menuAberto && (
-        <div
-          id="menu-mobile"
-          className="md:hidden border-t border-outline-variant/40 bg-surface px-5 py-4 flex flex-col animate-fade-in"
+      {/*
+       * O painel nasce do canto onde está o botão que o abriu e volta pelo mesmo
+       * caminho. Fica sempre montado: assim abrir e fechar podem se cruzar no
+       * meio do movimento, sem esperar um terminar para o outro começar.
+       *
+       * Encosta na base da barra sem sobrepô-la: vidro leve sobre vidro leve
+       * derruba a legibilidade dos dois.
+       */}
+      <div
+        id="menu-mobile"
+        data-aberto={menuAberto}
+        inert={!menuAberto}
+        className="folha-menu folha-menu-material absolute inset-x-3 top-full origin-top-right rounded-3xl border border-outline-variant bg-surface-container/90 p-3 shadow-[var(--sombra-2)] backdrop-blur-xl md:hidden"
+      >
+        <a
+          href="#agenda"
+          onClick={() => setMenuAberto(false)}
+          className="botao-primario pressionavel-suave pressionavel tipo-rotulo-botao mb-2 flex items-center justify-center gap-2 rounded-2xl py-4 focus-ring"
         >
+          <Calendar className="h-4 w-4" aria-hidden="true" />
+          Inscrições
+        </a>
+
+        {LINKS.map((link) => (
           <a
-            href="#agenda"
+            key={link.href}
+            href={link.href}
             onClick={() => setMenuAberto(false)}
-            className="flex items-center justify-center gap-2 bg-primary text-on-primary text-sm font-bold py-3.5 rounded-full mb-2 focus-ring"
+            aria-current={secaoAtual === link.id ? 'true' : undefined}
+            className={`pressionavel-suave pressionavel flex items-center justify-between rounded-2xl px-4 py-3.5 text-base font-semibold focus-ring ${
+              secaoAtual === link.id
+                ? 'bg-primary/10 text-primary'
+                : 'text-on-surface-variant hover:text-primary'
+            }`}
           >
-            <Calendar className="w-4 h-4" aria-hidden="true" />
-            Agenda
+            {link.label}
+            {secaoAtual === link.id && (
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+            )}
           </a>
-          {LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuAberto(false)}
-              className="py-3.5 text-base font-semibold text-on-surface-variant hover:text-primary transition-colors rounded-md focus-ring"
-            >
-              {link.label}
-            </a>
-          ))}
-          {site.siteInstitucional && (
-            <a
-              href={site.siteInstitucional}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMenuAberto(false)}
-              className="py-3.5 text-base font-semibold text-on-surface-variant hover:text-primary transition-colors rounded-md focus-ring"
-            >
-              Santer
-            </a>
-          )}
-        </div>
-      )}
+        ))}
+
+        {site.siteInstitucional && (
+          <a
+            href={site.siteInstitucional}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMenuAberto(false)}
+            className="pressionavel-suave pressionavel flex rounded-2xl px-4 py-3.5 text-base font-semibold text-on-surface-variant hover:text-primary focus-ring"
+          >
+            Santer
+          </a>
+        )}
+      </div>
     </header>
   );
 }

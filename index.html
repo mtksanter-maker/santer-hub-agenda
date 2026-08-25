@@ -8,7 +8,8 @@
       name="description"
       content="Agenda oficial do Santer Hub: eventos, treinamentos e imersões para os parceiros imobiliários da Santer."
     />
-    <meta name="theme-color" content="#0f2d59" />
+    <!-- A barra do navegador na mesma cor da superfície do site. -->
+    <meta name="theme-color" content="#0a141d" />
     <link rel="icon" href="https://i.imgur.com/FyEzFUM.png" />
 
     <meta property="og:type" content="website" />
@@ -21,10 +22,27 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Fontes variáveis. A Inter entra com o eixo óptico (opsz 14..32): o
+      desenho da letra muda com o tamanho, em vez de a mesma forma ser esticada
+      do texto de apoio ao título.
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Manrope:wght@400..800&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      O tema é único e escuro, definido em `src/index.css`. Não há script de
+      tema aqui: o fundo abaixo pinta a página já na cor certa, antes mesmo do
+      CSS chegar, para não haver um lampejo branco enquanto o React monta.
+    -->
+    <style>
+      html {
+        background-color: #0a141d;
+        color-scheme: dark;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
