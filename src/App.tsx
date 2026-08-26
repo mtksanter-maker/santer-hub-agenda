@@ -7,6 +7,7 @@ import Spaces from './components/Spaces';
 import Footer from './components/Footer';
 import Revelar from './components/Revelar';
 import { useRota } from './lib/router';
+import { useAncora } from './lib/ancora';
 
 /**
  * O painel é carregado sob demanda: assim o SDK do Firebase Authentication
@@ -28,6 +29,9 @@ const AdminApp = lazy(() => import('./admin/AdminApp'));
  */
 export default function App() {
   const rota = useRota();
+
+  // Abrir o site já com #agenda, #espacos, #sobre... leva direto à seção.
+  useAncora();
 
   if (rota.startsWith('/admin')) {
     return (

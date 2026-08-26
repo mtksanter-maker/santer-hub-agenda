@@ -93,6 +93,7 @@ try {
     descricao: '',
     data: '2026-01-01',
     hora: '00:00',
+    imagem: 'https://exemplo.com/evento.jpg',
     linkGoogleForms: 'https://exemplo.com',
     ativo: true,
   });
@@ -169,6 +170,7 @@ try {
     descricao: 'Criado pelo diagnóstico.',
     data: '2026-09-15',
     hora: '19:00',
+    imagem: 'https://exemplo.com/evento.jpg',
     linkGoogleForms: 'https://docs.google.com/forms/d/e/TESTE/viewform',
     ativo: true,
   });
@@ -189,6 +191,7 @@ if (idTeste) {
     descricao: 'Editado pelo diagnóstico.',
     data: '2026-09-16',
     hora: '19:30',
+    imagem: 'https://exemplo.com/evento-editado.jpg',
     linkGoogleForms: 'https://docs.google.com/forms/d/e/TESTE/viewform',
     ativo: true,
   });
@@ -216,6 +219,7 @@ if (idTeste) {
       descricao: '',
       data: '15/09/2026',
       hora: '19:00',
+      imagem: 'https://exemplo.com/evento.jpg',
       linkGoogleForms: 'https://x.com',
       ativo: true,
     });
@@ -229,6 +233,7 @@ if (idTeste) {
       descricao: '',
       data: '2026-09-15',
       hora: '19:00',
+      imagem: 'https://exemplo.com/evento.jpg',
       linkGoogleForms: 'https://x.com',
       ativo: true,
       emailParticipante: 'a@b.com',
@@ -259,6 +264,7 @@ try {
     descricao: '',
     data: '2026-01-01',
     hora: '00:00',
+    imagem: 'https://exemplo.com/evento.jpg',
     linkGoogleForms: 'https://exemplo.com',
     ativo: true,
   });

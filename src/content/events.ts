@@ -5,7 +5,7 @@
  * Cloud Firestore, lida e gravada por `src/lib/eventsService.ts`. Aqui mora só
  * o tipo compartilhado pelo site e pelo painel.
  *
- * Cada documento do Firestore tem exatamente estes seis campos. O ID do
+ * Cada documento do Firestore tem exatamente estes sete campos. O ID do
  * documento é o `id` do evento.
  */
 
@@ -19,6 +19,8 @@ export interface Evento {
   data: string;
   /** 'HH:MM'. */
   hora: string;
+  /** URL da imagem de capa do card. Obrigatória ao criar/editar pelo painel. */
+  imagem: string;
   /** Link do formulário externo de inscrição. */
   linkGoogleForms: string;
   /** Inativo continua no painel, mas não aparece no site público. */

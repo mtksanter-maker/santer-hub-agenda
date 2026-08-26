@@ -21,6 +21,7 @@ export const EVENTO_NOVO: DadosEvento = {
   descricao: '',
   data: '',
   hora: '',
+  imagem: '',
   linkGoogleForms: '',
   ativo: true,
 };

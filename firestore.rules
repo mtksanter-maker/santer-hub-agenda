@@ -27,15 +27,16 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Um evento tem exatamente seis campos, e nenhum a mais.
+     * Um evento tem exatamente sete campos, e nenhum a mais.
      * Impede que uma escrita autenticada grave lixo ou dado de participante.
      */
     function eventoValido(dados) {
-      return dados.keys().hasOnly(['nome', 'descricao', 'data', 'hora', 'linkGoogleForms', 'ativo'])
-        && dados.keys().hasAll(['nome', 'data', 'hora', 'linkGoogleForms', 'ativo'])
+      return dados.keys().hasOnly(['nome', 'descricao', 'data', 'hora', 'imagem', 'linkGoogleForms', 'ativo'])
+        && dados.keys().hasAll(['nome', 'data', 'hora', 'imagem', 'linkGoogleForms', 'ativo'])
         && dados.nome is string && dados.nome.size() > 0 && dados.nome.size() <= 200
         && dados.data is string && dados.data.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && dados.hora is string && dados.hora.matches('^[0-9]{2}:[0-9]{2}$')
+        && dados.imagem is string && dados.imagem.matches('^https://.*')
         && dados.linkGoogleForms is string && dados.linkGoogleForms.matches('^https://.*')
         && dados.ativo is bool;
     }

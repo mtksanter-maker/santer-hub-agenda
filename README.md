@@ -91,6 +91,7 @@ Coleção `eventos`, um documento por evento:
   "descricao": "Descrição opcional",
   "data": "2026-09-15",
   "hora": "19:00",
+  "imagem": "https://exemplo.com/imagem-do-evento.jpg",
   "linkGoogleForms": "https://docs.google.com/forms/...",
   "ativo": true
 }
@@ -102,6 +103,7 @@ Coleção `eventos`, um documento por evento:
 | `descricao` | — | Aparece no card quando preenchida |
 | `data` | ✅ | `AAAA-MM-DD` |
 | `hora` | ✅ | `HH:MM` |
+| `imagem` | ✅ | Imagem de capa; precisa começar com `https://` |
 | `linkGoogleForms` | ✅ | Precisa começar com `https://` |
 | `ativo` | ✅ | Padrão: Ativo |
 

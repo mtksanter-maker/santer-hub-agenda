@@ -17,12 +17,29 @@ interface EventCardProps {
 export default function EventCard({ evento }: EventCardProps) {
   const inscricaoDisponivel = linkValido(evento.linkGoogleForms);
   const data = evento.data ? partesData(evento.data) : null;
+  const temImagem = linkValido(evento.imagem ?? '');
 
   return (
     <article
       onPointerMove={aoMoverPonteiro}
-      className="glass-card flex h-full flex-col rounded-3xl p-6 sm:p-7"
+      className="glass-card flex h-full flex-col overflow-hidden rounded-3xl"
     >
+      {/*
+       * Capa do evento. Todas as imagens ocupam a mesma área (a largura do card
+       * em 16:9) e são recortadas com object-cover, então cards diferentes
+       * mantêm a mesma proporção mesmo com imagens de tamanhos diferentes.
+       */}
+      {temImagem && (
+        <img
+          src={evento.imagem}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="aspect-[16/9] w-full object-cover"
+        />
+      )}
+
+      <div className="flex flex-1 flex-col p-6 sm:p-7">
       <div className="flex items-start gap-4">
         {/*
          * O bloco é a data por extenso para quem lê com leitor de tela e o
@@ -100,6 +117,7 @@ export default function EventCard({ evento }: EventCardProps) {
             </p>
           )}
         </div>
+      </div>
       </div>
     </article>
   );

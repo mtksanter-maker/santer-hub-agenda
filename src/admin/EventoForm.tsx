@@ -26,6 +26,7 @@ export default function EventoForm({ evento, onCancelar, onSalvo }: Props) {
           descricao: evento.descricao ?? '',
           data: evento.data,
           hora: evento.hora,
+          imagem: evento.imagem ?? '',
           linkGoogleForms: evento.linkGoogleForms,
           ativo: evento.ativo,
         }
@@ -46,6 +47,9 @@ export default function EventoForm({ evento, onCancelar, onSalvo }: Props) {
     if (!dados.nome.trim()) return setErro('Informe o nome do evento.');
     if (!dados.data) return setErro('Informe a data do evento.');
     if (!dados.hora) return setErro('Informe o horário do evento.');
+    if (!linkValido(dados.imagem)) {
+      return setErro('A imagem do card é obrigatória. Cole o link da imagem (https://...).');
+    }
     if (!linkValido(dados.linkGoogleForms) || !dados.linkGoogleForms.trim().startsWith('https://')) {
       return setErro('Informe um link válido, começando com https://');
     }
@@ -108,6 +112,21 @@ export default function EventoForm({ evento, onCancelar, onSalvo }: Props) {
             />
           </Campo>
         </div>
+
+        <Campo
+          label="Imagem de capa"
+          obrigatorio
+          ajuda="Cole o link público da imagem do card. Precisa começar com https://"
+        >
+          <input
+            type="url"
+            inputMode="url"
+            placeholder="https://exemplo.com/imagem-do-evento.jpg"
+            value={dados.imagem}
+            onChange={(e) => alterar('imagem', e.target.value)}
+            className={estiloCampo}
+          />
+        </Campo>
 
         <Campo
           label="Link do Google Forms"

@@ -12,9 +12,9 @@
  *   updateEvent(id, dados)     edita (inclui ativar/desativar)
  *   deleteEvent(id)            exclui
  *
- * Coleção: `eventos`. Cada documento tem exatamente seis campos —
- * nome, descricao, data, hora, linkGoogleForms e ativo. O ID do documento é o
- * ID do evento; o administrador nunca o preenche.
+ * Coleção: `eventos`. Cada documento tem exatamente sete campos — nome,
+ * descricao, data, hora, imagem, linkGoogleForms e ativo. O ID do documento é
+ * o ID do evento; o administrador nunca o preenche.
  *
  * Nenhum dado de participante é gravado: as inscrições acontecem no Google
  * Forms externo, referenciado apenas por `linkGoogleForms`.
@@ -77,18 +77,20 @@ function paraEvento(documento: QueryDocumentSnapshot<DocumentData>): Evento {
     descricao: String(d.descricao ?? '').trim(),
     data: String(d.data ?? '').trim(),
     hora: String(d.hora ?? '').trim(),
+    imagem: String(d.imagem ?? '').trim(),
     linkGoogleForms: String(d.linkGoogleForms ?? '').trim(),
     ativo: d.ativo === true,
   };
 }
 
-/** Garante que só os seis campos previstos cheguem ao Firestore. */
+/** Garante que só os sete campos previstos cheguem ao Firestore. */
 function paraDocumento(dados: DadosEvento) {
   return {
     nome: dados.nome.trim(),
     descricao: (dados.descricao ?? '').trim(),
     data: dados.data.trim(),
     hora: dados.hora.trim(),
+    imagem: (dados.imagem ?? '').trim(),
     linkGoogleForms: dados.linkGoogleForms.trim(),
     ativo: dados.ativo === true,
   };

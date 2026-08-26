@@ -230,6 +230,13 @@
    4. BASE
    ========================================================================= */
 
+/* O cabeçalho é fixo: a âncora precisa parar abaixo dele. */
+:target,
+section[id],
+div[id] {
+  scroll-margin-top: 6rem;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
