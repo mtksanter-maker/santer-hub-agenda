@@ -1,0 +1,17 @@
+[
+  {
+    "origin": [
+      "https://mtksanter-maker.github.io",
+      "http://localhost:5173"
+    ],
+    "method": ["GET", "HEAD", "PUT", "POST"],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "User-Agent",
+      "x-goog-resumable"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

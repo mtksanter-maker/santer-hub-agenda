@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "verificar": "node ferramentas/verificar-firebase.mjs"
+    "verificar": "node ferramentas/verificar-firebase.mjs",
+    "deploy": "npm run build && firebase deploy --only hosting",
+    "deploy:regras": "firebase deploy --only firestore:rules,storage"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
