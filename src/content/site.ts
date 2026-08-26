@@ -20,7 +20,7 @@ export const site = {
 
   /** Texto de apoio do rodapé. */
   textoRodape:
-    'O primeiro hub de negócios imobiliários de Jaraguá do Sul e região. Um ambiente feito para inspirar, treinar e conectar corretores de alta performance.',
+    'O primeiro hub de negócios imobiliários de Balneário Piçarras e região. Um ambiente feito para inspirar, treinar e conectar corretores de alta performance.',
 
   // ---------------------------------------------------------------------------
   // Assets da marca
@@ -47,7 +47,7 @@ export const site = {
   // ---------------------------------------------------------------------------
   // Contato
   // ---------------------------------------------------------------------------
-  endereco: 'Av. Getúlio Vargas, 1400 - Centro, Jaraguá do Sul - SC',
+  endereco: 'Av. Emanoel Pinto, 1294 - Centro, Balneário Piçarras - SC, 88380-000',
   email: 'hub@santerempreendimentos.com.br',
 
   /**
