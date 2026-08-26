@@ -39,7 +39,7 @@ igual em hospedagem estática (Firebase Hosting, Vercel, Netlify) ou com Node.
 
 ## Configurar o Firebase (uma vez só)
 
-O projeto já aponta para o Firebase `santer-hub`. Faltam dois passos no console:
+O projeto já aponta para o Firebase `santer-hub`. Faltam três passos no console:
 
 ### 1. Publicar as Security Rules
 
@@ -49,7 +49,16 @@ Console → **Firestore Database → Regras** → cole o conteúdo de
 São elas que garantem que o público só leia eventos ativos e que ninguém escreva
 sem estar autenticado.
 
-### 2. Criar o usuário administrador
+### 2. Publicar as regras do Storage
+
+Console → **Storage → Rules** → cole o conteúdo de
+[`storage.rules`](storage.rules) → **Publicar**.
+
+Essas regras permitem que o público visualize as capas dos eventos e restringem
+o envio de imagens ao administrador autenticado, aceitando apenas imagens de até
+5 MB.
+
+### 3. Criar o usuário administrador
 
 Console → **Authentication → Sign-in method** → ative **E-mail/senha**.
 Depois, aba **Users** → **Adicionar usuário** com e-mail e senha.

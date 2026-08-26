@@ -6,10 +6,12 @@
  * automaticamente — o administrador nunca o informa.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { ImagePlus, Loader2 } from 'lucide-react';
 import type { Evento } from '../content/events';
 import { createEvent, updateEvent } from '../lib/eventsService';
 import { EVENTO_NOVO, linkValido, type DadosEvento } from '../lib/eventos';
+import { ACEITA, ERRO_ENVIO, enviarImagemEvento } from '../lib/imagens';
 
 interface Props {
   /** `null` para criar um evento novo. */
@@ -34,6 +36,7 @@ export default function EventoForm({ evento, onCancelar, onSalvo }: Props) {
   );
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
 
   function alterar<K extends keyof DadosEvento>(campo: K, valor: DadosEvento[K]) {
     setDados((atual) => ({ ...atual, [campo]: valor }));
@@ -43,12 +46,13 @@ export default function EventoForm({ evento, onCancelar, onSalvo }: Props) {
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     if (salvando) return;
+    if (enviandoImagem) return setErro('Aguarde o envio da imagem terminar.');
 
     if (!dados.nome.trim()) return setErro('Informe o nome do evento.');
     if (!dados.data) return setErro('Informe a data do evento.');
     if (!dados.hora) return setErro('Informe o horário do evento.');
     if (!linkValido(dados.imagem)) {
-      return setErro('A imagem do card é obrigatória. Cole o link da imagem (https://...).');
+      return setErro('A imagem de capa é obrigatória. Envie um arquivo de imagem.');
     }
     if (!linkValido(dados.linkGoogleForms) || !dados.linkGoogleForms.trim().startsWith('https://')) {
       return setErro('Informe um link válido, começando com https://');
@@ -113,20 +117,13 @@ export default function EventoForm({ evento, onCancelar, onSalvo }: Props) {
           </Campo>
         </div>
 
-        <Campo
-          label="Imagem de capa"
-          obrigatorio
-          ajuda="Cole o link público da imagem do card. Precisa começar com https://"
-        >
-          <input
-            type="url"
-            inputMode="url"
-            placeholder="https://exemplo.com/imagem-do-evento.jpg"
-            value={dados.imagem}
-            onChange={(e) => alterar('imagem', e.target.value)}
-            className={estiloCampo}
-          />
-        </Campo>
+        <CampoImagem
+          url={dados.imagem}
+          onEnviada={(url) => alterar('imagem', url)}
+          onErro={setErro}
+          ocupado={enviandoImagem}
+          setOcupado={setEnviandoImagem}
+        />
 
         <Campo
           label="Link do Google Forms"
@@ -218,6 +215,94 @@ function Campo({
       {children}
       {ajuda && <span className="mt-1.5 block text-xs text-on-surface-variant">{ajuda}</span>}
     </label>
+  );
+}
+
+/**
+ * Campo da capa do evento: envia o arquivo na hora de escolher e guarda a URL
+ * pública devolvida pelo Storage.
+ *
+ * A prévia usa a mesma proporção do card do site (16:9, recortada com
+ * object-cover), então o que aparece aqui é exatamente o que a pessoa vai ver
+ * na agenda — inclusive o que fica de fora do recorte.
+ */
+function CampoImagem({
+  url,
+  onEnviada,
+  onErro,
+  ocupado,
+  setOcupado,
+}: {
+  url: string;
+  onEnviada: (url: string) => void;
+  onErro: (mensagem: string) => void;
+  ocupado: boolean;
+  setOcupado: (valor: boolean) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function aoEscolher(e: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0];
+    // Limpa o input para que escolher o MESMO arquivo de novo dispare o evento.
+    e.target.value = '';
+    if (!arquivo) return;
+
+    setOcupado(true);
+    onErro('');
+
+    try {
+      onEnviada(await enviarImagemEvento(arquivo));
+    } catch (falha) {
+      onErro(falha instanceof Error ? falha.message : ERRO_ENVIO);
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <div>
+      <span className="mb-1.5 block text-sm font-semibold text-on-surface">
+        Imagem de capa<span className="text-error"> *</span>
+      </span>
+
+      {linkValido(url) && (
+        <div className="mb-3 overflow-hidden rounded-xl border border-outline-variant">
+          <img src={url} alt="Prévia da capa do evento" className="aspect-[16/9] w-full object-cover" />
+        </div>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACEITA}
+        onChange={aoEscolher}
+        className="sr-only"
+      />
+
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={ocupado}
+        className="inline-flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-3 text-sm font-semibold text-on-surface transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-70 focus-ring"
+      >
+        {ocupado ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            Enviando imagem...
+          </>
+        ) : (
+          <>
+            <ImagePlus className="h-4 w-4" aria-hidden="true" />
+            {linkValido(url) ? 'Trocar imagem' : 'Escolher imagem'}
+          </>
+        )}
+      </button>
+
+      <span className="mt-1.5 block text-xs text-on-surface-variant">
+        JPG, PNG, WebP ou AVIF, até 5 MB. Use a proporção 16:9 (ex.: 1280x720) — a
+        imagem preenche o card inteiro e o que sobrar é recortado.
+      </span>
+    </div>
   );
 }
 
