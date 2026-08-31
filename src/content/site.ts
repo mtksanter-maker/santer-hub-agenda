@@ -12,7 +12,7 @@ export const site = {
 
   /** Frase de abertura do Hero. */
   chamadaHero:
-    'Um espaço criado para desenvolver parceiros, fortalecer relacionamentos e gerar novas oportunidades.',
+    'Um ecossistema criado para desenvolver parceiros, fortalecer conexões e acelerar a performance imobiliária através de relacionamento, conteúdo e capacitação contínua.',
 
   /** Texto institucional curto (seção "O Hub"). */
   textoInstitucional:
@@ -20,7 +20,7 @@ export const site = {
 
   /** Texto de apoio do rodapé. */
   textoRodape:
-    'O primeiro hub de negócios imobiliários de Balneário Piçarras e região. Um ambiente feito para inspirar, treinar e conectar corretores de alta performance.',
+    'O primeiro hub de negócios imobiliários do Brasil. O Santer HUB nasce para evidenciar o que sempre acreditamos: o parceiro imobiliário é o protagonista da nossa jornada. Este espaço é a materialização da metodologia e da cultura organizacional da Santer Empreendimentos: relevante, inquieta e em constante evolução.',
 
   // ---------------------------------------------------------------------------
   // Assets da marca

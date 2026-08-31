@@ -42,9 +42,9 @@ export const ESPACOS: Espaco[] = [
   {
     id: 'sala-master',
     nome: 'Sala Master',
-    capacidade: 'Até 12 pessoas',
+    capacidade: 'Até 9 pessoas',
     descricao:
-      'Sala executiva para reuniões e fechamentos estratégicos, com ambiente privativo e display interativo.',
+      'Sala executiva para reuniões e fechamentos estratégicos, com ambiente privativo.',
     imagem: salaMaster,
     linkAgendamento: EAGENDA_SALA_MASTER,
     canal: 'eagenda',
