@@ -11,8 +11,11 @@ export const site = {
   tagline: 'Capacitação. Conexão. Resultado.',
 
   /** Frase de abertura do Hero. */
-  chamadaHero:
-    'Um ecossistema criado para desenvolver parceiros, fortalecer conexões e acelerar a performance imobiliária através de relacionamento, conteúdo e capacitação contínua.',
+  chamadaHero: [
+    'Um ecossistema criado para desenvolver parceiros,',
+    'fortalecer conexões e acelerar a performance imobiliária',
+    'através de relacionamento, conteúdo e capacitação contínua.',
+  ],
 
   /** Texto institucional curto (seção "O Hub"). */
   textoInstitucional:

@@ -60,7 +60,7 @@ export default function Hero() {
       >
         <div
           ref={abertura.ref}
-          className={`mx-auto max-w-3xl text-center revelar${
+          className={`mx-auto max-w-5xl text-center revelar${
             abertura.visivel ? ' revelar-visivel' : ''
           }`}
         >
@@ -68,8 +68,13 @@ export default function Hero() {
            * A tagline não entra aqui: ela é o título da seção "O Hub", logo
            * abaixo, e apareceria duas vezes na mesma tela.
            */}
-          <p className="tipo-chamada mx-auto max-w-2xl text-balance text-on-surface">
-            {site.chamadaHero}
+          <p className="tipo-chamada mx-auto max-w-5xl text-balance text-on-surface">
+            {site.chamadaHero.map((linha, indice) => (
+              <span key={linha} className="lg:block">
+                {linha}
+                {indice < site.chamadaHero.length - 1 ? ' ' : null}
+              </span>
+            ))}
           </p>
 
           <div className="mt-10 flex justify-center">
