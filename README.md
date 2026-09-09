@@ -123,7 +123,7 @@ Coleção `eventos`, um documento por evento:
   "descricao": "Descrição opcional",
   "data": "2026-09-15",
   "hora": "19:00",
-  "imagem": "https://exemplo.com/imagem-do-evento.jpg",
+  "imagem": "https://hub.santerempreendimentos.com.br/uploads/eventos/1788989587-3f350a35.jpg",
   "linkGoogleForms": "https://docs.google.com/forms/...",
   "ativo": true
 }
