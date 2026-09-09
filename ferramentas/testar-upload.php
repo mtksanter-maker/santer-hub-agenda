@@ -83,5 +83,26 @@ imagepng($img, $comAlfa);
 verificar('PNG transparente é convertido', true, redimensionarParaJpeg($comAlfa, 'image/png', $destino));
 verificar('e sai com 1600 de largura', 1600, getimagesize($destino)[0]);
 
+echo "\n3. Nome do arquivo e URL\n";
+
+$nome = nomeAleatorio();
+verificar('termina em .jpg', true, str_ends_with($nome, '.jpg'));
+verificar('só tem caracteres seguros', 1, preg_match('/^[0-9]+-[0-9a-f]{8}\.jpg$/', $nome));
+verificar('dois nomes seguidos são diferentes', true, nomeAleatorio() !== nomeAleatorio());
+
+$servidor = ['HTTP_HOST' => 'hub.santerempreendimentos.com.br', 'HTTPS' => 'on'];
+verificar(
+    'monta a URL absoluta',
+    'https://hub.santerempreendimentos.com.br/uploads/eventos/abc.jpg',
+    urlPublica('abc.jpg', $servidor)
+);
+
+// Atrás do Cloudflare o PHP às vezes não vê HTTPS; o site é https de qualquer forma.
+verificar(
+    'sem HTTPS no ambiente ainda monta https',
+    'https://hub.santerempreendimentos.com.br/uploads/eventos/abc.jpg',
+    urlPublica('abc.jpg', ['HTTP_HOST' => 'hub.santerempreendimentos.com.br'])
+);
+
 printf("\n%d teste(s), %d falha(s)\n", $total, $falhas);
 exit($falhas > 0 ? 1 : 0);

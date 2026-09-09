@@ -88,3 +88,32 @@ function redimensionarParaJpeg(string $origem, string $tipo, string $destino): b
 
     return $gravou;
 }
+
+/** Pasta que recebe as capas. Fica sob o docroot para ser servida direto. */
+const PASTA_UPLOADS = __DIR__ . '/uploads/eventos';
+
+/**
+ * Nome novo para cada envio, sem nenhuma relação com o nome original.
+ *
+ * O carimbo de tempo dá ordem cronológica na pasta e os 8 dígitos aleatórios
+ * evitam que dois envios de "capa.jpg" no mesmo segundo se sobrescrevam.
+ */
+function nomeAleatorio(): string
+{
+    return sprintf('%d-%s.jpg', time(), bin2hex(random_bytes(4)));
+}
+
+/**
+ * URL absoluta da imagem gravada.
+ *
+ * Absoluta, e não relativa, porque o mesmo build também é publicado no GitHub
+ * Pages, numa subpasta: um caminho relativo apontaria para o lugar errado lá.
+ *
+ * O esquema é sempre https — o site só atende em https, e atrás do Cloudflare
+ * o PHP nem sempre enxerga a conexão como segura.
+ */
+function urlPublica(string $nome, array $servidor): string
+{
+    $host = $servidor['HTTP_HOST'] ?? '';
+    return sprintf('https://%s/uploads/eventos/%s', $host, $nome);
+}
