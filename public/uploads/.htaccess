@@ -24,5 +24,11 @@
   RemoveHandler .php .phtml .phar
 </Files>
 
-Options -ExecCGI -Indexes
+# Sem "Options -ExecCGI -Indexes" de propósito: essa diretiva exige
+# AllowOverride Options habilitado no vhost, e onde a hospedagem restringe
+# isso ela vira 500 na pasta inteira — todas as capas do site parariam de
+# carregar, para proteger contra algo que SetHandler none + RemoveHandler
+# (acima) já cobrem. A listagem de diretório (o -Indexes) é bloqueada, sem
+# depender de nenhuma diretiva do Apache, pelo uploads/index.html vazio.
+# Não reintroduza esta linha sem entender esse risco.
 AddType image/jpeg .jpg
