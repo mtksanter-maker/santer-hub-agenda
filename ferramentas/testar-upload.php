@@ -57,5 +57,31 @@ $vazio = tempnam(sys_get_temp_dir(), 'teste') . '.jpg';
 file_put_contents($vazio, '');
 verificar('arquivo vazio é recusado', null, tipoDaImagem($vazio));
 
+echo "\n2. Redimensionamento\n";
+
+$destino = tempnam(sys_get_temp_dir(), 'saida') . '.jpg';
+
+$grande = jpegDeTeste(4000, 3000);
+redimensionarParaJpeg($grande, 'image/jpeg', $destino);
+$dim = getimagesize($destino);
+verificar('largura vira 1600', 1600, $dim[0]);
+verificar('altura acompanha a proporção', 1200, $dim[1]);
+verificar('a saída é JPEG', 'image/jpeg', $dim['mime']);
+verificar('o arquivo encolheu', true, filesize($destino) < filesize($grande));
+
+$pequeno = jpegDeTeste(800, 600);
+redimensionarParaJpeg($pequeno, 'image/jpeg', $destino);
+$dim = getimagesize($destino);
+verificar('imagem menor não é ampliada', 800, $dim[0]);
+
+// PNG com transparência: vira JPEG sem alfa, e não pode quebrar.
+$comAlfa = tempnam(sys_get_temp_dir(), 'teste') . '.png';
+$img = imagecreatetruecolor(2000, 1000);
+imagesavealpha($img, true);
+imagefill($img, 0, 0, imagecolorallocatealpha($img, 0, 0, 0, 127));
+imagepng($img, $comAlfa);
+verificar('PNG transparente é convertido', true, redimensionarParaJpeg($comAlfa, 'image/png', $destino));
+verificar('e sai com 1600 de largura', 1600, getimagesize($destino)[0]);
+
 printf("\n%d teste(s), %d falha(s)\n", $total, $falhas);
 exit($falhas > 0 ? 1 : 0);

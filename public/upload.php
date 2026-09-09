@@ -44,3 +44,47 @@ function tipoDaImagem(string $caminho): ?string
     }
     return TIPOS_ACEITOS[$info[2]] ?? null;
 }
+
+/**
+ * Regrava a imagem como JPEG, com no máximo LARGURA_MAXIMA de largura.
+ *
+ * Regravar é a segunda barreira de segurança: o GD decodifica os pixels e
+ * escreve um arquivo novo, então qualquer coisa escondida nos metadados do
+ * original — inclusive PHP — fica para trás.
+ *
+ * A saída é sempre JPEG porque a capa é foto e o card recorta em 16:9; a
+ * transparência de um PNG não teria para onde ir, e por isso o fundo vira
+ * branco em vez de preto, que é o padrão do GD e ninguém espera.
+ */
+function redimensionarParaJpeg(string $origem, string $tipo, string $destino): bool
+{
+    $imagem = match ($tipo) {
+        'image/jpeg' => @imagecreatefromjpeg($origem),
+        'image/png' => @imagecreatefrompng($origem),
+        'image/webp' => @imagecreatefromwebp($origem),
+        'image/avif' => @imagecreatefromavif($origem),
+        default => false,
+    };
+    if ($imagem === false) {
+        return false;
+    }
+
+    $largura = imagesx($imagem);
+    $altura = imagesy($imagem);
+
+    // Imagem menor que o teto não é ampliada: só perderia qualidade.
+    $escala = min(1, LARGURA_MAXIMA / $largura);
+    $novaLargura = (int) round($largura * $escala);
+    $novaAltura = (int) round($altura * $escala);
+
+    $saida = imagecreatetruecolor($novaLargura, $novaAltura);
+    imagefilledrectangle($saida, 0, 0, $novaLargura, $novaAltura, imagecolorallocate($saida, 255, 255, 255));
+    imagecopyresampled($saida, $imagem, 0, 0, 0, 0, $novaLargura, $novaAltura, $largura, $altura);
+
+    $gravou = imagejpeg($saida, $destino, QUALIDADE_JPEG);
+
+    imagedestroy($imagem);
+    imagedestroy($saida);
+
+    return $gravou;
+}
