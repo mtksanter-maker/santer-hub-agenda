@@ -37,11 +37,18 @@ export async function enviarImagemEvento(arquivo: File): Promise<string> {
   const corpo = new FormData();
   corpo.append('imagem', arquivo);
 
+  // Buscar o token FORA do try de rede, de propósito: tokenAtual() lança sua
+  // própria mensagem ("Sua sessão expirou...") quando a sessão caiu, e essa
+  // mensagem precisa chegar intacta à tela. Se entrar no try, o catch abaixo
+  // — que existe para falha real de rede — a rotula como "rede" e a
+  // substitui pelo texto genérico, escondendo o motivo verdadeiro.
+  const token = await tokenAtual();
+
   let resposta: Response;
   try {
     resposta = await fetch(ENDPOINT, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${await tokenAtual()}` },
+      headers: { Authorization: `Bearer ${token}` },
       body: corpo,
     });
   } catch (erro) {
