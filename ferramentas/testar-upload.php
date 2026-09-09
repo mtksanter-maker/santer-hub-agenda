@@ -83,6 +83,30 @@ imagepng($img, $comAlfa);
 verificar('PNG transparente é convertido', true, redimensionarParaJpeg($comAlfa, 'image/png', $destino));
 verificar('e sai com 1600 de largura', 1600, getimagesize($destino)[0]);
 
+// WebP: só testa se o GD suporta; ambiente pode variar.
+if (function_exists('imagewebp') && function_exists('imagecreatefromwebp')) {
+    $webp = tempnam(sys_get_temp_dir(), 'teste') . '.webp';
+    $img = imagecreatetruecolor(1200, 900);
+    imagefilledrectangle($img, 0, 0, 1200, 900, imagecolorallocate($img, 100, 150, 200));
+    imagewebp($img, $webp);
+    imagedestroy($img);
+    verificar('WebP é redimensionado', true, redimensionarParaJpeg($webp, 'image/webp', $destino));
+    verificar('WebP sai com 1200 de largura', 1200, getimagesize($destino)[0]);
+}
+
+// AVIF: suporte é ainda mais variável, só testa se o ambiente suportar.
+if (function_exists('imageavif') && function_exists('imagecreatefromavif')) {
+    $avif = tempnam(sys_get_temp_dir(), 'teste') . '.avif';
+    $img = imagecreatetruecolor(2400, 1800);
+    imagefilledrectangle($img, 0, 0, 2400, 1800, imagecolorallocate($img, 50, 100, 150));
+    imageavif($img, $avif);
+    imagedestroy($img);
+    verificar('AVIF é redimensionado', true, redimensionarParaJpeg($avif, 'image/avif', $destino));
+    verificar('AVIF sai com 1600 de largura', 1600, getimagesize($destino)[0]);
+} else {
+    printf("  SKIP  AVIF (ambiente não suporta imageavif/imagecreatefromavif)\n");
+}
+
 echo "\n3. Nome do arquivo e URL\n";
 
 $nome = nomeAleatorio();

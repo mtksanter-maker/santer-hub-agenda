@@ -35,6 +35,10 @@ const TIPOS_ACEITOS = [
  * É a primeira das três barreiras contra subir um .php disfarçado de imagem:
  * `getimagesize()` lê os bytes iniciais e não tem opinião sobre a extensão.
  * Devolve null quando o arquivo não é uma imagem que aceitamos.
+ *
+ * A instalação de GD varia por hospedagem: recusamos o formato se a função
+ * de leitura não existir, e o chamador já trata null como "415 Not Acceptable",
+ * que é melhor que derrubar a requisição com erro fatal.
  */
 function tipoDaImagem(string $caminho): ?string
 {
@@ -42,7 +46,25 @@ function tipoDaImagem(string $caminho): ?string
     if ($info === false) {
         return null;
     }
-    return TIPOS_ACEITOS[$info[2]] ?? null;
+
+    $tipo = TIPOS_ACEITOS[$info[2]] ?? null;
+    if ($tipo === null) {
+        return null;
+    }
+
+    // Só devolve o tipo se a função de leitura existe no GD deste ambiente.
+    $mapaDeFuncoes = [
+        'image/jpeg' => 'imagecreatefromjpeg',
+        'image/png' => 'imagecreatefrompng',
+        'image/webp' => 'imagecreatefromwebp',
+        'image/avif' => 'imagecreatefromavif',
+    ];
+
+    if (!isset($mapaDeFuncoes[$tipo]) || !function_exists($mapaDeFuncoes[$tipo])) {
+        return null;
+    }
+
+    return $tipo;
 }
 
 /**
@@ -55,16 +77,39 @@ function tipoDaImagem(string $caminho): ?string
  * A saída é sempre JPEG porque a capa é foto e o card recorta em 16:9; a
  * transparência de um PNG não teria para onde ir, e por isso o fundo vira
  * branco em vez de preto, que é o padrão do GD e ninguém espera.
+ *
+ * A instalação de GD varia por hospedagem: não chamamos função inexistente,
+ * devolvemos false em vez de estourar erro fatal — é melhor que 500 para quem
+ * tenta enviar um formato que o ambiente não suporta.
  */
 function redimensionarParaJpeg(string $origem, string $tipo, string $destino): bool
 {
-    $imagem = match ($tipo) {
-        'image/jpeg' => @imagecreatefromjpeg($origem),
-        'image/png' => @imagecreatefrompng($origem),
-        'image/webp' => @imagecreatefromwebp($origem),
-        'image/avif' => @imagecreatefromavif($origem),
-        default => false,
-    };
+    $imagem = false;
+
+    // Verifica se a função existe antes de chamar, para não estourar erro fatal.
+    switch ($tipo) {
+        case 'image/jpeg':
+            if (function_exists('imagecreatefromjpeg')) {
+                $imagem = @imagecreatefromjpeg($origem);
+            }
+            break;
+        case 'image/png':
+            if (function_exists('imagecreatefrompng')) {
+                $imagem = @imagecreatefrompng($origem);
+            }
+            break;
+        case 'image/webp':
+            if (function_exists('imagecreatefromwebp')) {
+                $imagem = @imagecreatefromwebp($origem);
+            }
+            break;
+        case 'image/avif':
+            if (function_exists('imagecreatefromavif')) {
+                $imagem = @imagecreatefromavif($origem);
+            }
+            break;
+    }
+
     if ($imagem === false) {
         return false;
     }
