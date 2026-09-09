@@ -1,0 +1,63 @@
+# Publica o site no servidor próprio, via FTP, a cada push na main.
+#
+# O que sobe é o `dist/`, que não é versionado: a workflow constrói o site aqui
+# e envia só o resultado. O envio é incremental — a action guarda um
+# `.ftp-deploy-sync-state.json` na pasta de destino e, nos deploys seguintes,
+# manda apenas os arquivos que mudaram. Não apague esse arquivo no servidor.
+#
+# O caminho de destino vem do secret FTP_SERVER_DIR e precisa terminar com "/".
+name: Deploy via FTP
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Dois deploys ao mesmo tempo se sobrescreveriam no servidor.
+concurrency:
+  group: deploy-ftp
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
+        with:
+          protocol: ftp
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          # A hospedagem atende o FTP na 201, e nao na 21 do padrao.
+          port: 201
+          local-dir: ./dist/
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          # O build gera também o servidor Node (server.cjs), que não serve
+          # para nada numa hospedagem estática. Os três primeiros padrões são
+          # os que a action exclui por padrão: declarar a lista substitui o
+          # padrão, então eles precisam ser repetidos aqui.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            server.cjs
+            server.cjs.map
