@@ -1,0 +1,14 @@
+# Esta pasta recebe arquivo enviado de fora. Nada aqui pode ser executado:
+# é a última barreira caso a validação de tipo do upload.php seja contornada.
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+
+# Em hospedagem com PHP-FPM/LiteSpeed o php_flag acima é ignorado; então
+# também recusamos qualquer requisição a arquivo executável.
+<FilesMatch "\.(php|phtml|php[0-9]|phar|cgi|pl|py|sh|htaccess)$">
+  Require all denied
+</FilesMatch>
+
+Options -ExecCGI -Indexes
+AddType image/jpeg .jpg
