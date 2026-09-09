@@ -1,14 +1,28 @@
 # Esta pasta recebe arquivo enviado de fora. Nada aqui pode ser executado:
 # é a última barreira caso a validação de tipo do upload.php seja contornada.
+#
+# php_flag depende do módulo certo por versão — mod_php.c no PHP 8,
+# mod_php7.c no PHP 7 — e a hospedagem final não é garantida ser uma ou
+# outra; cobrir as duas variantes é mais seguro do que assumir e a guarda
+# ficar muda sem avisar.
 <IfModule mod_php.c>
   php_flag engine off
 </IfModule>
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>
 
-# Em hospedagem com PHP-FPM/LiteSpeed o php_flag acima é ignorado; então
-# também recusamos qualquer requisição a arquivo executável.
-<FilesMatch "\.(php|phtml|php[0-9]|phar|cgi|pl|py|sh|htaccess)$">
-  Require all denied
-</FilesMatch>
+# Em hospedagem com PHP-FPM/LiteSpeed nenhum php_flag acima se aplica — lá o
+# handler que executa PHP vem do mapeamento de extensão, não de um módulo
+# Apache. SetHandler none apaga esse mapeamento para qualquer arquivo desta
+# pasta e RemoveHandler tira o handler herdado da configuração global; juntos
+# cobrem também "algo.php.jpg", que um <FilesMatch> ancorado no fim do nome
+# (\.php$) deixaria passar se o mod_mime da hospedagem despachar pela
+# primeira extensão reconhecida em vez da última.
+<Files "*">
+  SetHandler none
+  RemoveHandler .php .phtml .phar
+</Files>
 
 Options -ExecCGI -Indexes
 AddType image/jpeg .jpg

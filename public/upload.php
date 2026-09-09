@@ -13,6 +13,17 @@
  */
 declare(strict_types=1);
 
+/**
+ * Tenta abrir um pouco mais de fôlego para o decode de imagem grande.
+ *
+ * Com @ porque muita hospedagem compartilhada proíbe alterar memory_limit
+ * por php_ini_set (retorna false ou lança aviso) — o código não pode depender
+ * de que isso funcione, só se beneficia quando funciona. MEGAPIXELS_MAXIMO,
+ * mais abaixo, é dimensionado para sobreviver mesmo que este ini_set seja
+ * ignorado e o limite fique no padrão de 128M da hospedagem.
+ */
+@ini_set('memory_limit', '256M');
+
 /** Acima disso a capa demora a carregar no celular de quem visita. */
 const TAMANHO_MAXIMO = 5 * 1024 * 1024;
 
@@ -166,15 +177,23 @@ function urlPublica(string $nome, array $servidor): string
 /**
  * Teto de megapixels antes de decodificar a imagem.
  *
- * Um arquivo pequeno em bytes pode declarar uma resolução gigantesca — o
- * decode aloca memória proporcional a largura×altura, não ao tamanho do
- * arquivo no disco. Sem este teto, um PNG de poucos KB com 60000×60000 de
- * resolução (dimensões cabem no cabeçalho do formato) derruba o processo
- * PHP na hora do imagecreatefrom*, e isso é barato de repetir contra um
- * endpoint público. 50 milhões de pixels cobre qualquer foto real de capa
- * de evento com folga.
+ * O número existe por causa da aritmética do GD, não do tamanho do arquivo:
+ * imagecreatefrom*() aloca ~4 bytes por pixel para o buffer decodificado
+ * (RGBA interno), então 24 milhões de pixels já pedem ~96 MB só de buffer,
+ * fora o resto do processo PHP. Um arquivo pequeno em bytes pode declarar
+ * dimensões gigantescas — as dimensões cabem em poucos bytes do cabeçalho
+ * do formato — e estourar essa conta na hora do decode, o que é uma forma
+ * barata de derrubar um endpoint público.
+ *
+ * 50 milhões de pixels (o valor original desta constante) já estoura um
+ * memory_limit de 128M: 50_000_000 × 4 bytes = ~191 MB só de buffer, sem
+ * contar a cópia de saída do redimensionamento. E esse fatal não passa por
+ * responder() — o cliente recebe HTML/500 em vez de JSON, e com
+ * display_errors ligado o caminho absoluto do servidor vaza na resposta.
+ * 24 milhões de pixels (6000×4000, bem mais que qualquer foto real de capa
+ * de evento) já sobrevive com folga a um memory_limit de 256M.
  */
-const MEGAPIXELS_MAXIMO = 50_000_000;
+const MEGAPIXELS_MAXIMO = 24_000_000;
 
 /**
  * Lê as dimensões da imagem sem decodificar os pixels.
@@ -238,7 +257,20 @@ function tokenValido(string $token): bool
     }
 
     $dados = json_decode($resposta, true);
-    return isset($dados['users'][0]['localId']);
+    if (!isset($dados['users'][0]['localId'])) {
+        return false;
+    }
+
+    // accounts:lookup devolve 200 com o usuário mesmo se ele foi desabilitado
+    // no console do Firebase — "token existe e é de um usuário" não é o mesmo
+    // que "esse usuário pode usar o painel agora". Sem esta checagem,
+    // desabilitar alguém no console não corta o envio: o token continua
+    // validando até expirar.
+    if (($dados['users'][0]['disabled'] ?? false) === true) {
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -298,6 +330,14 @@ function main(): void
 
     $arquivo = $_FILES['imagem'] ?? null;
     if ($arquivo === null || ($arquivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        responder(400, ['erro' => 'Nenhuma imagem chegou ao servidor. Tente de novo.']);
+    }
+
+    // Defesa em profundidade: confirma que tmp_name é mesmo um upload desta
+    // requisição, e não um caminho arbitrário. Não há hoje um jeito de
+    // $_FILES['imagem']['tmp_name'] apontar para outro lugar, mas é o
+    // convencional para qualquer código que vai ler o arquivo por esse nome.
+    if (!is_uploaded_file($arquivo['tmp_name'])) {
         responder(400, ['erro' => 'Nenhuma imagem chegou ao servidor. Tente de novo.']);
     }
 

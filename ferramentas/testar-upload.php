@@ -147,15 +147,23 @@ verificar('JWT falso é recusado', false, tokenValido(
 
 echo "\n5. Teto de megapixels (antes do decode)\n";
 
-// Dimensões lidas do cabeçalho, sem imagem de verdade no disco: getimagesize()
-// só olha os bytes iniciais, então um PNG minúsculo com header gigante é a
-// própria ameaça que o teto existe para recusar.
-verificar('abaixo do teto passa', true, (7000 * 7000) <= MEGAPIXELS_MAXIMO);
-verificar('acima do teto é recusado', true, (8000 * 8000) > MEGAPIXELS_MAXIMO);
+// Ancora de valor: registra o número atual da constante, não o comportamento
+// do código — só para um diff futuro em MEGAPIXELS_MAXIMO aparecer aqui e
+// não passar em silêncio. Os testes que decidem de verdade são os de baixo,
+// que chamam dimensoesDaImagem() sobre arquivo real.
+verificar('MEGAPIXELS_MAXIMO ancora de valor: 24 milhões', 24_000_000, MEGAPIXELS_MAXIMO);
 
 $dentroDoTeto = jpegDeTeste(4000, 3000);
 verificar('imagem normal tem dimensões lidas', [4000, 3000], dimensoesDaImagem($dentroDoTeto));
 verificar('e fica dentro do teto', true, (4000 * 3000) <= MEGAPIXELS_MAXIMO);
+
+// A checagem de dimensão em main() só roda quando dimensoesDaImagem() devolve
+// algo; para um arquivo que não é imagem ela devolve null e main() pula a
+// checagem (o 415 de tipoDaImagem() já teria recusado antes de chegar aqui).
+// É esse null, não uma conta com a constante, que decide o comportamento.
+$naoEImagem = tempnam(sys_get_temp_dir(), 'naoimg');
+file_put_contents($naoEImagem, 'isto nao e uma imagem');
+verificar('arquivo que não é imagem não tem dimensões', null, dimensoesDaImagem($naoEImagem));
 
 printf("\n%d teste(s), %d falha(s)\n", $total, $falhas);
 exit($falhas > 0 ? 1 : 0);
