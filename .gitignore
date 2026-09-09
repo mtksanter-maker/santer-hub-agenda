@@ -12,3 +12,8 @@ _backup-design-original/
 # Cache local da Firebase CLI.
 .firebase/
 firebase-debug.log
+
+# Capa gravada por um teste local de public/upload.php. O .htaccess e o
+# index.html da pasta continuam versionados (vão no deploy); só a imagem
+# enviada em teste não deve entrar no repositório.
+public/uploads/eventos/

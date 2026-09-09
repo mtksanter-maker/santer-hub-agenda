@@ -171,7 +171,7 @@ export default function EventoForm({ evento, onCancelar, onSalvo }: Props) {
       <div className="mt-8 flex flex-wrap gap-3">
         <button
           type="submit"
-          disabled={salvando}
+          disabled={salvando || enviandoImagem}
           className="rounded-full bg-primary px-6 py-3 text-sm font-bold uppercase tracking-wider text-on-primary transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 focus-ring"
         >
           {salvando ? 'Salvando...' : 'Salvar evento'}
@@ -220,7 +220,7 @@ function Campo({
 
 /**
  * Campo da capa do evento: envia o arquivo na hora de escolher e guarda a URL
- * pública devolvida pelo Storage.
+ * pública devolvida pelo próprio servidor do site (`public/upload.php`).
  *
  * A prévia usa a mesma proporção do card do site (16:9, recortada com
  * object-cover), então o que aparece aqui é exatamente o que a pessoa vai ver

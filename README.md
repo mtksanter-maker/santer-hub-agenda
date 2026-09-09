@@ -34,8 +34,23 @@ npm run lint       # checagem de tipos (tsc --noEmit)
 npm run verificar  # diagnóstico da conexão com o Firebase
 ```
 
-O site não tem back-end próprio: o servidor apenas entrega os arquivos. Funciona
-igual em hospedagem estática (Firebase Hosting, Vercel, Netlify) ou com Node.
+O site não tem back-end próprio, com uma exceção: o upload da capa dos eventos.
+Fora isso o servidor apenas entrega os arquivos, e funciona igual em hospedagem
+estática (Firebase Hosting, Vercel, Netlify) ou com Node.
+
+### Upload da capa do evento
+
+[`public/upload.php`](public/upload.php) é a única parte do site que roda no
+servidor. Ele existe porque o Cloud Storage do Firebase exigiria o plano
+Blaze (veja a seção sobre o Storage, mais abaixo).
+
+- Só aceita envio de quem está logado no painel: o token da sessão é conferido
+  com o Google a cada requisição, não há senha própria nem sessão no PHP.
+- A imagem é redimensionada para no máximo 1600px de largura e gravada como
+  JPEG em `uploads/eventos/`, dentro de `public/`.
+- As imagens enviadas sobrevivem aos deploys: a action de FTP publica com
+  envio incremental e só apaga, no servidor, o que ela mesma enviou — o
+  conteúdo de `uploads/eventos/` fica de fora do `dist/` e nunca é tocado.
 
 ## Configurar o Firebase (uma vez só)
 
@@ -49,14 +64,15 @@ Console → **Firestore Database → Regras** → cole o conteúdo de
 São elas que garantem que o público só leia eventos ativos e que ninguém escreva
 sem estar autenticado.
 
-### 2. Publicar as regras do Storage
+### 2. Sobre o Storage do Firebase
 
-Console → **Storage → Rules** → cole o conteúdo de
-[`storage.rules`](storage.rules) → **Publicar**.
+Este projeto não usa o Cloud Storage do Firebase: listar o bucket devolve 404,
+porque provisioná-lo exigiria colocar o projeto no plano Blaze. O arquivo
+[`storage.rules`](storage.rules) fica no repositório caso o Storage seja
+ativado um dia, mas não há nada para publicar agora.
 
-Essas regras permitem que o público visualize as capas dos eventos e restringem
-o envio de imagens ao administrador autenticado, aceitando apenas imagens de até
-5 MB.
+Quem guarda as capas dos eventos hoje é o próprio servidor do site, por
+`public/upload.php` — veja a seção "Upload da capa do evento", mais acima.
 
 ### 3. Criar o usuário administrador
 
@@ -65,6 +81,13 @@ Depois, aba **Users** → **Adicionar usuário** com e-mail e senha.
 
 Não existe autocadastro: o site nunca chama `createUserWithEmailAndPassword`.
 Só entra quem você criar ali.
+
+**Aviso operacional:** a segurança do `upload.php` depende disso continuar
+assim. Console → **Authentication → Sign-in method** precisa manter o
+autocadastro desligado — hoje está, e `accounts:signUp` com a chave pública
+responde `ADMIN_ONLY_OPERATION`. Se alguém ligar essa opção, qualquer pessoa
+passaria a poder criar conta e, com ela, gravar arquivo no servidor pelo
+endpoint de upload.
 
 ### Conferir se deu certo
 
@@ -112,7 +135,7 @@ Coleção `eventos`, um documento por evento:
 | `descricao` | — | Aparece no card quando preenchida |
 | `data` | ✅ | `AAAA-MM-DD` |
 | `hora` | ✅ | `HH:MM` |
-| `imagem` | ✅ | Imagem de capa; precisa começar com `https://` |
+| `imagem` | ✅ | Imagem de capa; enviada por upload no painel, não por link |
 | `linkGoogleForms` | ✅ | Precisa começar com `https://` |
 | `ativo` | ✅ | Padrão: Ativo |
 
