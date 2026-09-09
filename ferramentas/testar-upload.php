@@ -128,5 +128,34 @@ verificar(
     urlPublica('abc.jpg', ['HTTP_HOST' => 'hub.santerempreendimentos.com.br'])
 );
 
+echo "\n4. Verificação do token (exige internet)\n";
+
+$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer abc123';
+verificar('lê o Authorization padrão', 'Bearer abc123', cabecalhoAutorizacao());
+unset($_SERVER['HTTP_AUTHORIZATION']);
+$_SERVER['REDIRECT_HTTP_AUTHORIZATION'] = 'Bearer redirecionado';
+verificar('lê a variante do CGI', 'Bearer redirecionado', cabecalhoAutorizacao());
+unset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
+verificar('sem cabeçalho devolve vazio', '', cabecalhoAutorizacao());
+
+verificar('token vazio é recusado', false, tokenValido(''));
+verificar('token inventado é recusado', false, tokenValido('nao-e-um-token'));
+// Formato de JWT, assinatura falsa: o Google precisa recusar.
+verificar('JWT falso é recusado', false, tokenValido(
+    'eyJhbGciOiJSUzI1NiJ9.eyJ1c2VyX2lkIjoiZmFrZSJ9.assinatura-invalida'
+));
+
+echo "\n5. Teto de megapixels (antes do decode)\n";
+
+// Dimensões lidas do cabeçalho, sem imagem de verdade no disco: getimagesize()
+// só olha os bytes iniciais, então um PNG minúsculo com header gigante é a
+// própria ameaça que o teto existe para recusar.
+verificar('abaixo do teto passa', true, (7000 * 7000) <= MEGAPIXELS_MAXIMO);
+verificar('acima do teto é recusado', true, (8000 * 8000) > MEGAPIXELS_MAXIMO);
+
+$dentroDoTeto = jpegDeTeste(4000, 3000);
+verificar('imagem normal tem dimensões lidas', [4000, 3000], dimensoesDaImagem($dentroDoTeto));
+verificar('e fica dentro do teto', true, (4000 * 3000) <= MEGAPIXELS_MAXIMO);
+
 printf("\n%d teste(s), %d falha(s)\n", $total, $falhas);
 exit($falhas > 0 ? 1 : 0);

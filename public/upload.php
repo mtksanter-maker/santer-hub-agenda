@@ -162,3 +162,176 @@ function urlPublica(string $nome, array $servidor): string
     $host = $servidor['HTTP_HOST'] ?? '';
     return sprintf('https://%s/uploads/eventos/%s', $host, $nome);
 }
+
+/**
+ * Teto de megapixels antes de decodificar a imagem.
+ *
+ * Um arquivo pequeno em bytes pode declarar uma resolução gigantesca — o
+ * decode aloca memória proporcional a largura×altura, não ao tamanho do
+ * arquivo no disco. Sem este teto, um PNG de poucos KB com 60000×60000 de
+ * resolução (dimensões cabem no cabeçalho do formato) derruba o processo
+ * PHP na hora do imagecreatefrom*, e isso é barato de repetir contra um
+ * endpoint público. 50 milhões de pixels cobre qualquer foto real de capa
+ * de evento com folga.
+ */
+const MEGAPIXELS_MAXIMO = 50_000_000;
+
+/**
+ * Lê as dimensões da imagem sem decodificar os pixels.
+ *
+ * É uma função irmã de tipoDaImagem(), e não uma alteração nela: as duas
+ * chamam getimagesize() sobre o mesmo arquivo, mas servem perguntas
+ * diferentes ("que tipo é" vs. "que resolução tem") e mudar a assinatura de
+ * tipoDaImagem() obrigaria a tocar numa função que os testes já cobrem e que
+ * as tasks anteriores revisaram. getimagesize() só lê o cabeçalho do
+ * arquivo — é a mesma operação barata que tipoDaImagem() já faz, então
+ * checar a resolução aqui não adiciona custo antes do decode real.
+ */
+function dimensoesDaImagem(string $caminho): ?array
+{
+    $info = @getimagesize($caminho);
+    if ($info === false) {
+        return null;
+    }
+
+    return [$info[0], $info[1]];
+}
+
+/**
+ * A mesma chave que já é pública em src/lib/firebase.ts.
+ *
+ * Ela identifica o projeto, não autoriza nada — e é por ser do projeto que
+ * serve aqui: um token emitido por outro projeto Firebase não passa.
+ */
+const FIREBASE_API_KEY = 'AIzaSyAPQ330T_Y24dCfVtCxzsS5KjHddPJ9hk8';
+
+/**
+ * Pergunta ao Google se o token vale.
+ *
+ * Delegar a verificação evita escrever validação de JWT à mão, que é onde
+ * moram os furos clássicos: esquecer de conferir a expiração, o emissor ou o
+ * destinatário deixa a porta aberta sem que nada denuncie.
+ *
+ * Qualquer resposta que não traga um usuário é tratada como token inválido —
+ * inclusive falha de rede. Recusar é o lado seguro do erro.
+ */
+function tokenValido(string $token): bool
+{
+    if ($token === '') {
+        return false;
+    }
+
+    $ch = curl_init('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' . FIREBASE_API_KEY);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode(['idToken' => $token]),
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 10,
+    ]);
+    $resposta = curl_exec($ch);
+    $codigo = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($codigo !== 200 || !is_string($resposta)) {
+        return false;
+    }
+
+    $dados = json_decode($resposta, true);
+    return isset($dados['users'][0]['localId']);
+}
+
+/**
+ * Lê o cabeçalho Authorization, que nem sempre chega inteiro ao PHP.
+ *
+ * Muita hospedagem roda o PHP como CGI/FPM, e nessa configuração o Apache
+ * descarta o Authorization antes de repassar — o endpoint responderia 401
+ * para todo mundo, sem nada no código denunciando o motivo. Os três lugares
+ * abaixo cobrem as variações que aparecem na prática.
+ */
+function cabecalhoAutorizacao(): string
+{
+    foreach (['HTTP_AUTHORIZATION', 'REDIRECT_HTTP_AUTHORIZATION'] as $chave) {
+        if (!empty($_SERVER[$chave])) {
+            return $_SERVER[$chave];
+        }
+    }
+
+    if (function_exists('apache_request_headers')) {
+        foreach (apache_request_headers() as $nome => $valor) {
+            if (strcasecmp($nome, 'Authorization') === 0) {
+                return $valor;
+            }
+        }
+    }
+
+    return '';
+}
+
+/** Resposta JSON única do endpoint. Encerra a execução. */
+function responder(int $codigo, array $corpo): void
+{
+    http_response_code($codigo);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($corpo, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+/**
+ * O endpoint em si.
+ *
+ * A ordem importa: autoriza antes de olhar o arquivo, olha as dimensões
+ * antes de decodificar os pixels, e olha o conteúdo do arquivo antes de
+ * gravar qualquer coisa no disco.
+ */
+function main(): void
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        responder(405, ['erro' => 'Método não permitido.']);
+    }
+
+    $cabecalho = cabecalhoAutorizacao();
+    $token = str_starts_with($cabecalho, 'Bearer ') ? substr($cabecalho, 7) : '';
+    if (!tokenValido($token)) {
+        responder(401, ['erro' => 'Sua sessão expirou. Entre de novo para enviar a imagem.']);
+    }
+
+    $arquivo = $_FILES['imagem'] ?? null;
+    if ($arquivo === null || ($arquivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        responder(400, ['erro' => 'Nenhuma imagem chegou ao servidor. Tente de novo.']);
+    }
+
+    if ($arquivo['size'] > TAMANHO_MAXIMO) {
+        responder(413, ['erro' => 'A imagem passa de 5 MB. Reduza o arquivo e tente de novo.']);
+    }
+
+    $tipo = tipoDaImagem($arquivo['tmp_name']);
+    if ($tipo === null) {
+        responder(415, ['erro' => 'Formato não aceito. Envie um JPG, PNG, WebP ou AVIF.']);
+    }
+
+    // Confere a resolução com o cabeçalho já lido, antes de qualquer decode
+    // de pixels: um arquivo leve em bytes pode declarar uma resolução gigante
+    // e estourar a memória do processo no imagecreatefrom*, que é uma forma
+    // barata de derrubar o endpoint. TAMANHO_MAXIMO sozinho não pega isso.
+    $dimensoes = dimensoesDaImagem($arquivo['tmp_name']);
+    if ($dimensoes !== null && ($dimensoes[0] * $dimensoes[1]) > MEGAPIXELS_MAXIMO) {
+        responder(413, ['erro' => 'A imagem tem resolução alta demais. Reduza as dimensões e tente de novo.']);
+    }
+
+    if (!is_dir(PASTA_UPLOADS) && !mkdir(PASTA_UPLOADS, 0755, true) && !is_dir(PASTA_UPLOADS)) {
+        responder(500, ['erro' => 'Não foi possível salvar a imagem. Tente de novo.']);
+    }
+
+    $nome = nomeAleatorio();
+    if (!redimensionarParaJpeg($arquivo['tmp_name'], $tipo, PASTA_UPLOADS . '/' . $nome)) {
+        responder(500, ['erro' => 'Não foi possível salvar a imagem. Tente de novo.']);
+    }
+
+    responder(200, ['url' => urlPublica($nome, $_SERVER)]);
+}
+
+// No CLI o arquivo é apenas uma biblioteca, para os testes poderem carregá-lo.
+if (PHP_SAPI !== 'cli') {
+    main();
+}
