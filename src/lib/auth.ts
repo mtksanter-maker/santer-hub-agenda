@@ -87,3 +87,13 @@ export function useAutenticacao(): EstadoAutenticacao {
 
   return estado;
 }
+
+/**
+ * Token de quem está logado, para provar ao servidor do site que o envio de
+ * imagem parte do painel. O Firebase renova o token sozinho quando expira.
+ */
+export async function tokenAtual(): Promise<string> {
+  const usuario = auth.currentUser;
+  if (!usuario) throw new Error('Sua sessão expirou. Entre de novo.');
+  return usuario.getIdToken();
+}

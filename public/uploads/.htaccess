@@ -1,0 +1,34 @@
+# Esta pasta recebe arquivo enviado de fora. Nada aqui pode ser executado:
+# é a última barreira caso a validação de tipo do upload.php seja contornada.
+#
+# php_flag depende do módulo certo por versão — mod_php.c no PHP 8,
+# mod_php7.c no PHP 7 — e a hospedagem final não é garantida ser uma ou
+# outra; cobrir as duas variantes é mais seguro do que assumir e a guarda
+# ficar muda sem avisar.
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>
+
+# Em hospedagem com PHP-FPM/LiteSpeed nenhum php_flag acima se aplica — lá o
+# handler que executa PHP vem do mapeamento de extensão, não de um módulo
+# Apache. SetHandler none apaga esse mapeamento para qualquer arquivo desta
+# pasta e RemoveHandler tira o handler herdado da configuração global; juntos
+# cobrem também "algo.php.jpg", que um <FilesMatch> ancorado no fim do nome
+# (\.php$) deixaria passar se o mod_mime da hospedagem despachar pela
+# primeira extensão reconhecida em vez da última.
+<Files "*">
+  SetHandler none
+  RemoveHandler .php .phtml .phar
+</Files>
+
+# Sem "Options -ExecCGI -Indexes" de propósito: essa diretiva exige
+# AllowOverride Options habilitado no vhost, e onde a hospedagem restringe
+# isso ela vira 500 na pasta inteira — todas as capas do site parariam de
+# carregar, para proteger contra algo que SetHandler none + RemoveHandler
+# (acima) já cobrem. A listagem de diretório (o -Indexes) é bloqueada, sem
+# depender de nenhuma diretiva do Apache, pelo uploads/index.html vazio.
+# Não reintroduza esta linha sem entender esse risco.
+AddType image/jpeg .jpg
