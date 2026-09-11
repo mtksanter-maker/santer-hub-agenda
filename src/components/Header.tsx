@@ -76,9 +76,9 @@ export default function Header() {
           <img
             src={site.logoSanterUrl}
             alt="Santer"
-            width={175}
-            height={45}
-            className="logo-marca h-9 w-auto object-contain sm:h-10"
+            width={219}
+            height={56}
+            className="logo-marca h-[45px] w-auto object-contain sm:h-[50px]"
             referrerPolicy="no-referrer"
           />
         </a>
