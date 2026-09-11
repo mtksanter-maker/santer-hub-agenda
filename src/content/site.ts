@@ -23,7 +23,7 @@ export const site = {
 
   /** Texto de apoio do rodapé. */
   textoRodape:
-    'O primeiro hub de negócios imobiliários do Brasil. O Santer HUB nasce para evidenciar o que sempre acreditamos: o parceiro imobiliário é o protagonista da nossa jornada. Este espaço é a materialização da metodologia e da cultura organizacional da Santer Empreendimentos: relevante, inquieta e em constante evolução.',
+    'O Santer HUB nasce para evidenciar o que sempre acreditamos: o parceiro imobiliário é o protagonista da nossa jornada. Este espaço é a materialização da metodologia e da cultura organizacional da Santer Empreendimentos: relevante, inquieta e em constante evolução.',
 
   // ---------------------------------------------------------------------------
   // Assets da marca

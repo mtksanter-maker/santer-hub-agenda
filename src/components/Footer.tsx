@@ -7,10 +7,9 @@ import { mapaUrl, site } from '../content/site';
  * O fim da página é onde alguém procura "onde fica" e "como falo com vocês" —
  * então endereço e e-mail moram aqui, junto com os atalhos para as seções.
  *
- * O acesso ao painel continua discreto: o link muda o hash para `#/admin`, que
- * é a rota tratada em `App.tsx`. Ele não dá acesso a nada por si só — quem
- * entra precisa passar pelo Firebase Authentication, e as Security Rules do
- * Firestore é que autorizam as operações.
+ * O painel administrativo não é divulgado no rodapé. A rota `#/admin`
+ * continua disponível somente para quem possui o endereço direto e passa pela
+ * autenticação do Firebase.
  */
 
 const ATALHOS = [
@@ -102,17 +101,10 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center gap-3 border-t border-outline-variant pt-7 sm:flex-row sm:justify-between">
+        <div className="flex items-center border-t border-outline-variant pt-7">
           <p className="text-xs text-on-surface-variant/60">
             © {new Date().getFullYear()} {site.nome}
           </p>
-
-          <a
-            href="#/admin"
-            className="pressionavel rounded-full px-4 py-2 text-xs font-medium tracking-wide text-on-surface-variant/50 hover:text-primary focus-ring"
-          >
-            Painel ADM
-          </a>
         </div>
       </div>
     </footer>
