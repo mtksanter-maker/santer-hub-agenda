@@ -51,6 +51,14 @@ Blaze (veja a seção sobre o Storage, mais abaixo).
 - As imagens enviadas sobrevivem aos deploys: a action de FTP publica com
   envio incremental e só apaga, no servidor, o que ela mesma enviou — o
   conteúdo de `uploads/eventos/` fica de fora do `dist/` e nunca é tocado.
+- A URL devolvida é montada a partir da pasta onde o próprio `upload.php` está
+  publicado. O site vive numa subpasta
+  (`santerempreendimentos.com.br/hub/`), então a capa sai como
+  `.../hub/uploads/eventos/x.jpg`. Capas gravadas quando o site morava no
+  subdomínio `hub.santerempreendimentos.com.br` (hoje fora do ar) são
+  corrigidas na leitura por `urlDaCapa()`, em
+  [`src/lib/imagens.ts`](src/lib/imagens.ts) — o dado no Firestore não é
+  reescrito.
 
 ## Configurar o Firebase (uma vez só)
 
@@ -123,7 +131,7 @@ Coleção `eventos`, um documento por evento:
   "descricao": "Descrição opcional",
   "data": "2026-09-15",
   "hora": "19:00",
-  "imagem": "https://hub.santerempreendimentos.com.br/uploads/eventos/1788989587-3f350a35.jpg",
+  "imagem": "https://santerempreendimentos.com.br/hub/uploads/eventos/1788989587-3f350a35.jpg",
   "linkGoogleForms": "https://docs.google.com/forms/...",
   "ativo": true
 }

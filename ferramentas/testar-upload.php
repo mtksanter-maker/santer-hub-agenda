@@ -114,18 +114,32 @@ verificar('termina em .jpg', true, str_ends_with($nome, '.jpg'));
 verificar('só tem caracteres seguros', 1, preg_match('/^[0-9]+-[0-9a-f]{8}\.jpg$/', $nome));
 verificar('dois nomes seguidos são diferentes', true, nomeAleatorio() !== nomeAleatorio());
 
-$servidor = ['HTTP_HOST' => 'hub.santerempreendimentos.com.br', 'HTTPS' => 'on'];
+// O caso real de produção: o site mora em /hub/, não na raiz do domínio.
+$servidor = [
+    'HTTP_HOST' => 'santerempreendimentos.com.br',
+    'SCRIPT_NAME' => '/hub/upload.php',
+    'HTTPS' => 'on',
+];
 verificar(
-    'monta a URL absoluta',
-    'https://hub.santerempreendimentos.com.br/uploads/eventos/abc.jpg',
+    'mantém a subpasta do site na URL',
+    'https://santerempreendimentos.com.br/hub/uploads/eventos/abc.jpg',
     urlPublica('abc.jpg', $servidor)
+);
+
+verificar(
+    'na raiz do domínio não sai barra dobrada',
+    'https://exemplo.com.br/uploads/eventos/abc.jpg',
+    urlPublica('abc.jpg', ['HTTP_HOST' => 'exemplo.com.br', 'SCRIPT_NAME' => '/upload.php'])
 );
 
 // Atrás do Cloudflare o PHP às vezes não vê HTTPS; o site é https de qualquer forma.
 verificar(
     'sem HTTPS no ambiente ainda monta https',
-    'https://hub.santerempreendimentos.com.br/uploads/eventos/abc.jpg',
-    urlPublica('abc.jpg', ['HTTP_HOST' => 'hub.santerempreendimentos.com.br'])
+    'https://santerempreendimentos.com.br/hub/uploads/eventos/abc.jpg',
+    urlPublica('abc.jpg', [
+        'HTTP_HOST' => 'santerempreendimentos.com.br',
+        'SCRIPT_NAME' => '/hub/upload.php',
+    ])
 );
 
 echo "\n4. Verificação do token (exige internet)\n";

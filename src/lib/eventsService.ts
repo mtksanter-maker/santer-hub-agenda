@@ -34,6 +34,7 @@ import {
 } from 'firebase/firestore/lite';
 import { db } from './firebase';
 import type { Evento } from '../content/events';
+import { urlDaCapa } from './imagens';
 
 const COLECAO = 'eventos';
 
@@ -77,7 +78,7 @@ function paraEvento(documento: QueryDocumentSnapshot<DocumentData>): Evento {
     descricao: String(d.descricao ?? '').trim(),
     data: String(d.data ?? '').trim(),
     hora: String(d.hora ?? '').trim(),
-    imagem: String(d.imagem ?? '').trim(),
+    imagem: urlDaCapa(String(d.imagem ?? '')),
     linkGoogleForms: String(d.linkGoogleForms ?? '').trim(),
     ativo: d.ativo === true,
   };

@@ -66,3 +66,32 @@ export async function enviarImagemEvento(arquivo: File): Promise<string> {
 
   return dados.url;
 }
+
+/**
+ * Endereço antigo das capas, de quando o site morava num subdomínio próprio.
+ *
+ * O site passou a ser publicado em santerempreendimentos.com.br/hub/ e o
+ * subdomínio saiu do ar (responde 403 em tudo). Os eventos gravados antes da
+ * mudança guardam a URL antiga no Firestore, e essas capas apareceriam
+ * quebradas para sempre — o campo `imagem` é texto puro, ninguém reescreve.
+ */
+const HOST_ANTIGO = 'hub.santerempreendimentos.com.br';
+const BASE_NOVA = 'https://santerempreendimentos.com.br/hub';
+
+/**
+ * Corrige a URL da capa vinda do banco.
+ *
+ * Só toca no que veio do host antigo; qualquer outro endereço (uma imagem
+ * hospedada fora, por exemplo) passa intacto. É uma tradução na leitura, não
+ * uma migração: o dado no Firestore continua como está, e um evento reeditado
+ * pelo painel já grava a URL nova, que o `upload.php` monta a partir da
+ * própria pasta em que está publicado.
+ */
+export function urlDaCapa(url: string): string {
+  const endereco = url.trim();
+  const antigo = `https://${HOST_ANTIGO}/`;
+
+  if (!endereco.startsWith(antigo)) return endereco;
+
+  return `${BASE_NOVA}/${endereco.slice(antigo.length)}`;
+}

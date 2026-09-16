@@ -165,13 +165,26 @@ function nomeAleatorio(): string
  * Absoluta, e não relativa, porque o mesmo build também é publicado no GitHub
  * Pages, numa subpasta: um caminho relativo apontaria para o lugar errado lá.
  *
+ * O caminho vem de SCRIPT_NAME, não da raiz do domínio: o site é publicado em
+ * santerempreendimentos.com.br/hub/, uma SUBPASTA. Fixar '/uploads/...' na
+ * raiz gerava URLs como .../uploads/eventos/x.jpg — um endereço que não
+ * existe — em vez de .../hub/uploads/eventos/x.jpg. Como a pasta de uploads
+ * fica ao lado deste arquivo (PASTA_UPLOADS é __DIR__), o diretório do
+ * próprio script é sempre o prefixo certo, onde quer que o site seja
+ * publicado.
+ *
  * O esquema é sempre https — o site só atende em https, e atrás do Cloudflare
  * o PHP nem sempre enxerga a conexão como segura.
  */
 function urlPublica(string $nome, array $servidor): string
 {
     $host = $servidor['HTTP_HOST'] ?? '';
-    return sprintf('https://%s/uploads/eventos/%s', $host, $nome);
+
+    // dirname() devolve '/' na raiz e '/hub' numa subpasta; o rtrim tira a
+    // barra do primeiro caso para não sair '//uploads'.
+    $pasta = rtrim(str_replace('\\', '/', dirname($servidor['SCRIPT_NAME'] ?? '')), '/');
+
+    return sprintf('https://%s%s/uploads/eventos/%s', $host, $pasta, $nome);
 }
 
 /**
