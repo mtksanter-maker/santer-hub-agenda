@@ -51,14 +51,15 @@ Blaze (veja a seção sobre o Storage, mais abaixo).
 - As imagens enviadas sobrevivem aos deploys: a action de FTP publica com
   envio incremental e só apaga, no servidor, o que ela mesma enviou — o
   conteúdo de `uploads/eventos/` fica de fora do `dist/` e nunca é tocado.
-- A URL devolvida é montada a partir da pasta onde o próprio `upload.php` está
-  publicado. O site vive numa subpasta
-  (`santerempreendimentos.com.br/hub/`), então a capa sai como
-  `.../hub/uploads/eventos/x.jpg`. Capas gravadas quando o site morava no
-  subdomínio `hub.santerempreendimentos.com.br` (hoje fora do ar) são
-  corrigidas na leitura por `urlDaCapa()`, em
-  [`src/lib/imagens.ts`](src/lib/imagens.ts) — o dado no Firestore não é
-  reescrito.
+- A URL devolvida vem da constante `BASE_PUBLICA`, no topo do `upload.php`:
+  `https://santerempreendimentos.com.br/hub`. **Se o site mudar de endereço, é
+  essa linha que muda.** Ela é fixa, e não deduzida da requisição, porque a
+  mesma pasta atende por mais de um endereço — o subdomínio antigo
+  `hub.santerempreendimentos.com.br` ainda aponta para cá. Abrir o painel por
+  ele faria a capa nascer com uma URL que o visitante não consegue abrir.
+- Capas gravadas antes disso, com o endereço do subdomínio, são corrigidas na
+  leitura por `urlDaCapa()`, em [`src/lib/imagens.ts`](src/lib/imagens.ts) — o
+  dado no Firestore não é reescrito.
 
 ## Configurar o Firebase (uma vez só)
 

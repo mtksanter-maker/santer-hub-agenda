@@ -160,31 +160,33 @@ function nomeAleatorio(): string
 }
 
 /**
+ * Endereço público do site, sem barra no fim.
+ *
+ * SE O SITE MUDAR DE ENDEREÇO, É ESTA LINHA QUE MUDA.
+ *
+ * É uma constante, e não algo deduzido da requisição, porque a mesma pasta no
+ * servidor atende por mais de um endereço: além de
+ * santerempreendimentos.com.br/hub/, o subdomínio antigo
+ * hub.santerempreendimentos.com.br ainda aponta para cá. Quem abre o painel
+ * pelo subdomínio faria o PHP gerar URLs com aquele host — endereços que não
+ * abrem para o visitante — e a capa nasceria quebrada. A capa vai para o
+ * Firestore e é lida por todo mundo, então o endereço dela não pode depender
+ * de por onde o administrador entrou.
+ */
+const BASE_PUBLICA = 'https://santerempreendimentos.com.br/hub';
+
+/**
  * URL absoluta da imagem gravada.
  *
  * Absoluta, e não relativa, porque o mesmo build também é publicado no GitHub
  * Pages, numa subpasta: um caminho relativo apontaria para o lugar errado lá.
  *
- * O caminho vem de SCRIPT_NAME, não da raiz do domínio: o site é publicado em
- * santerempreendimentos.com.br/hub/, uma SUBPASTA. Fixar '/uploads/...' na
- * raiz gerava URLs como .../uploads/eventos/x.jpg — um endereço que não
- * existe — em vez de .../hub/uploads/eventos/x.jpg. Como a pasta de uploads
- * fica ao lado deste arquivo (PASTA_UPLOADS é __DIR__), o diretório do
- * próprio script é sempre o prefixo certo, onde quer que o site seja
- * publicado.
- *
  * O esquema é sempre https — o site só atende em https, e atrás do Cloudflare
  * o PHP nem sempre enxerga a conexão como segura.
  */
-function urlPublica(string $nome, array $servidor): string
+function urlPublica(string $nome): string
 {
-    $host = $servidor['HTTP_HOST'] ?? '';
-
-    // dirname() devolve '/' na raiz e '/hub' numa subpasta; o rtrim tira a
-    // barra do primeiro caso para não sair '//uploads'.
-    $pasta = rtrim(str_replace('\\', '/', dirname($servidor['SCRIPT_NAME'] ?? '')), '/');
-
-    return sprintf('https://%s%s/uploads/eventos/%s', $host, $pasta, $nome);
+    return sprintf('%s/uploads/eventos/%s', BASE_PUBLICA, $nome);
 }
 
 /**
@@ -381,7 +383,7 @@ function main(): void
         responder(500, ['erro' => 'Não foi possível salvar a imagem. Tente de novo.']);
     }
 
-    responder(200, ['url' => urlPublica($nome, $_SERVER)]);
+    responder(200, ['url' => urlPublica($nome)]);
 }
 
 // No CLI o arquivo é apenas uma biblioteca, para os testes poderem carregá-lo.

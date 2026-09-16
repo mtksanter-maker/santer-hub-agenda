@@ -114,32 +114,29 @@ verificar('termina em .jpg', true, str_ends_with($nome, '.jpg'));
 verificar('só tem caracteres seguros', 1, preg_match('/^[0-9]+-[0-9a-f]{8}\.jpg$/', $nome));
 verificar('dois nomes seguidos são diferentes', true, nomeAleatorio() !== nomeAleatorio());
 
-// O caso real de produção: o site mora em /hub/, não na raiz do domínio.
-$servidor = [
-    'HTTP_HOST' => 'santerempreendimentos.com.br',
-    'SCRIPT_NAME' => '/hub/upload.php',
-    'HTTPS' => 'on',
-];
+// A URL é sempre o endereço público do site, com a subpasta /hub/ — nunca
+// depende de por onde a requisição chegou.
 verificar(
-    'mantém a subpasta do site na URL',
+    'monta a URL no endereço público, com a subpasta',
     'https://santerempreendimentos.com.br/hub/uploads/eventos/abc.jpg',
-    urlPublica('abc.jpg', $servidor)
+    urlPublica('abc.jpg')
 );
 
+// Este é o caso que quebrou em produção: o painel aberto pelo subdomínio
+// antigo, que aponta para a mesma pasta. A URL não pode mudar por causa disso.
+$_SERVER['HTTP_HOST'] = 'hub.santerempreendimentos.com.br';
+$_SERVER['SCRIPT_NAME'] = '/upload.php';
 verificar(
-    'na raiz do domínio não sai barra dobrada',
-    'https://exemplo.com.br/uploads/eventos/abc.jpg',
-    urlPublica('abc.jpg', ['HTTP_HOST' => 'exemplo.com.br', 'SCRIPT_NAME' => '/upload.php'])
-);
-
-// Atrás do Cloudflare o PHP às vezes não vê HTTPS; o site é https de qualquer forma.
-verificar(
-    'sem HTTPS no ambiente ainda monta https',
+    'ignora o host e o caminho por onde a requisição chegou',
     'https://santerempreendimentos.com.br/hub/uploads/eventos/abc.jpg',
-    urlPublica('abc.jpg', [
-        'HTTP_HOST' => 'santerempreendimentos.com.br',
-        'SCRIPT_NAME' => '/hub/upload.php',
-    ])
+    urlPublica('abc.jpg')
+);
+unset($_SERVER['HTTP_HOST'], $_SERVER['SCRIPT_NAME']);
+
+verificar(
+    'a base não termina em barra, para não sair // na URL',
+    false,
+    str_ends_with(BASE_PUBLICA, '/')
 );
 
 echo "\n4. Verificação do token (exige internet)\n";
