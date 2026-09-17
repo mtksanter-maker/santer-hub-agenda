@@ -195,6 +195,37 @@ link — não cria, não edita e não lê respostas.
 O link abre em nova aba, com `rel="noopener noreferrer"`. Enquanto o link não
 for uma URL válida, o card mostra **Em breve** em vez de um botão quebrado.
 
+## Imagem de compartilhamento
+
+A prévia que aparece quando alguém manda o link do Hub no WhatsApp, LinkedIn,
+Facebook ou X é [`public/og.png`](public/og.png) — 1200×630, o formato que os
+robôs de prévia esperam. As meta tags `og:` ficam no
+[`index.html`](index.html).
+
+Para regerar a arte (marca, frase ou layout mudou):
+
+```bash
+bash ferramentas/gerar-og.sh
+```
+
+O script monta um SVG com o gradiente e a tipografia da marca e rasteriza com
+`rsvg-convert`; ele baixa os dois logos e a fonte Manrope na hora, e não
+instala nada na máquina. Precisa de `librsvg` e `imagemagick`.
+
+Dois detalhes que não são óbvios e que já quebraram esta prévia:
+
+- **O fundo precisa ser opaco.** Antes havia um PNG transparente com o logo em
+  branco; os robôs de prévia achatam a transparência em branco, e o link
+  aparecia com um retângulo vazio.
+- **A URL da imagem precisa ser absoluta**, com a subpasta `/hub/`. Robô de
+  prévia não resolve caminho relativo. Se o site mudar de endereço, essa URL
+  muda junto com a `BASE_PUBLICA` do `upload.php`.
+
+Depois de publicar uma imagem nova, o WhatsApp e o Facebook guardam a antiga
+por dias. Para forçar a releitura, use o
+[Sharing Debugger do Facebook](https://developers.facebook.com/tools/debug/)
+ou publique a imagem com outro nome de arquivo.
+
 ## Outros pontos de edição
 
 | Arquivo | Conteúdo |
@@ -209,6 +240,7 @@ for uma URL válida, o card mostra **Em breve** em vez de um botão quebrado.
 firestore.rules        Security Rules — cole no console do Firebase
 ferramentas/
   verificar-firebase.mjs   diagnóstico (npm run verificar)
+  gerar-og.sh              recria a imagem de compartilhamento (public/og.png)
 server.ts              servidor de produção: só entrega dist/
 src/
   App.tsx              página única + rota #/admin (carregada sob demanda)

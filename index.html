@@ -14,13 +14,43 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
+    <!--
+      Prévia do link em WhatsApp, LinkedIn, Facebook e X.
+
+      A imagem é `public/og.png`, gerada por `ferramentas/gerar-og.sh`, e a URL
+      dela é ABSOLUTA: robô de prévia não resolve caminho relativo, e um
+      caminho relativo aqui daria uma prévia sem imagem. Como o endereço está
+      escrito à mão, ele acompanha a subpasta /hub/ — é o mesmo cuidado da
+      constante BASE_PUBLICA no `public/upload.php`, e muda junto com ela se o
+      site trocar de endereço.
+
+      A imagem tem fundo OPACO de propósito. Antes daqui havia um PNG
+      transparente com as letras brancas do logo: os robôs de prévia achatam a
+      transparência em branco, e o resultado era um retângulo quase vazio.
+    -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Santer Hub" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:url" content="https://santerempreendimentos.com.br/hub/" />
     <meta property="og:title" content="Santer Hub — Agenda de eventos" />
     <meta
       property="og:description"
       content="Capacitação. Conexão. Resultado. Confira a agenda do Santer Hub e garanta sua participação."
     />
-    <meta property="og:image" content="https://i.imgur.com/FyEzFUM.png" />
+    <meta property="og:image" content="https://santerempreendimentos.com.br/hub/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <!-- As dimensões declaradas deixam a prévia montar no tamanho certo já na
+         primeira vez, antes de o robô terminar de baixar a imagem. -->
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Logo do Santer Hub sobre fundo azul escuro, com a frase Capacitação. Conexão. Resultado."
+    />
+
+    <!-- Sem esta linha o X mostra uma tarja pequena em vez do cartão grande.
+         O resto das informações ele lê das tags og: acima. -->
+    <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
